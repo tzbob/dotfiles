@@ -1,0 +1,103 @@
+[options]
+resize_grip = false
+scroll_on_output = false
+scroll_on_keystroke = true
+audible_bell = false
+visible_bell = true
+mouse_autohide = false
+allow_bold = false
+dynamic_title = true
+urgent_on_bell = true
+clickable_url = true
+font = Source Code Pro 10
+scrollback_lines = 1000
+search_wrap = true
+icon_name = terminal
+#geometry = 640x480
+
+# 0.0: opaque, 1.0: transparent
+transparency = 0.0
+pseudo_transparency = false
+
+# "system", "on" or "off"
+cursor_blink = system
+
+# "block", "underline" or "ibeam"
+cursor_shape = underline
+
+# $BROWSER is used by default
+browser = chromium
+
+# word characters used for word selection
+# (default if unset: all graphic non-punctuation/space characters)
+#word_chars = -A-Za-z0-9,./?%&#:_=+@~
+
+[colors]
+background = #FEFEFE
+foreground = #282828
+
+foreground_bold = #888888
+foreground_dim = #888888
+cursor = #000000
+
+# if unset, will reverse foreground and background
+highlight = #2f2f2f
+
+# black
+color0 = #000000
+
+# bright_black
+color8 = #282828
+
+# red
+color1 = #a97475
+
+# bright_red
+color9 = #bb9091
+
+# green
+color2 = #75a974
+
+# bright_green
+color10 = #91bb90
+
+# yellow
+color3 = #a9a774
+
+# bright_yellow
+color11 = #bbb990
+
+# blue
+color4 = #7475a9
+
+# bright_blue
+color12 = #9091bb
+
+# magenta
+color5 = #a774a9
+
+# bright_magenta
+color13 = #b990bb
+
+# cyan
+color6 = #74a9a7
+
+# bright_cyan
+color14 = #90bbb9
+
+# white
+color7 = #c3c3c3
+
+# bright_white
+color15 = #AAAAAA
+
+[hints]
+#font = Monospace 12
+#foreground = #dcdccc
+#background = #3f3f3f
+#padding = 2
+#border = #3f3f3f
+#border_width = 0.5
+#roundness = 2.0
+
+# vim: ft=dosini
