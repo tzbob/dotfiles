@@ -86,31 +86,37 @@ extr () {
 }
 
 timesleep() {
-    sudo rtcwake -m mem -t $(date --date="$@" +%s)
+  TIME=$(date --date "+6 hours" +%s)
+  if [ $# -gt 0 ]
+  then
+    TIME=$(date --date "$@" +%s)
+  fi
+  sudo rtcwake -m mem -t $TIME
+  mplayer "/media/data/Music/IRIS OST [MP3]/05 Jooni - Empty.mp3"
 }
 
 pu() {
-    dropbox puburl "$@" | xsel
+  dropbox puburl "$@" | xsel
 }
 
 cd() {
-    builtin cd "$@" && ls
+  builtin cd "$@" && ls
 }
 
 copy() {
-    cp -r "$@" ~/.drag
+  cp -r "$@" ~/.drag
 }
 
 cut() {
-    mv "$@" ~/.drag
+  mv "$@" ~/.drag
 }
 
 paste() {
-    mv ~/.drag/* ./
+  mv ~/.drag/* ./
 }
 
 launch() {
-    nohup "$@" > /dev/null 2>&1&
+  nohup "$@" > /dev/null 2>&1&
 }
 
 ls

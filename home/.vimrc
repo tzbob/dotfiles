@@ -15,6 +15,8 @@ Bundle 'bling/vim-airline'
 Bundle 'flazz/vim-colorschemes'
 Bundle 'derekwyatt/vim-scala'
 Bundle 'lambdatoast/elm.vim'
+Bundle 'leafgarland/typescript-vim'
+Bundle 'kchmck/vim-coffee-script'
 
 Bundle 'Shougo/vimproc.vim'
 Bundle 'Shougo/unite.vim'

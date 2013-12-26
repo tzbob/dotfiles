@@ -1,6 +1,7 @@
 import XMonad
 import Data.Monoid
 import System.Exit
+import System.IO
 
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
@@ -10,22 +11,23 @@ import XMonad.Hooks.EwmhDesktops
 import XMonad.Actions.UpdatePointer
 
 import XMonad.Layout.NoBorders
-import XMonad.Layout.ResizableTile
 import XMonad.Layout.Spacing
+import XMonad.Layout.ResizableTile
+import XMonad.Layout.Named
 
-import XMonad.Util.Run(spawnPipe)
-import System.IO(hPutStrLn)
+import XMonad.Util.NamedScratchpad
+import XMonad.Util.Run
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map as M
 
-myMainColor = "#C6361E"
-myBgColor = "#333333"
+myMainColor = "#FE526F"
+myBgColor = "#134D76"
 myTextcolor = "#EFEFEF"
 myLowColor = "#999999"
 
-myNormalBorderColor = myBgColor
-myFocusedBorderColor = myBgColor
+myNormalBorderColor = myLowColor
+myFocusedBorderColor = myLowColor
 
 -- Key bindings. Add, modify or remove key bindings here.
 -------------------------------------------------------------------------------
@@ -88,9 +90,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm, xK_p), spawn "xfce4-appfinder")
     , ((modm, xK_o), spawn ("dmenu_run -sb " ++ "\"" ++ myMainColor ++ "\""))
     , ((modm, xK_b), spawn "chromium")
-    , ((modm, xK_v), spawn "~/bin/toggleTrayer.sh" >> refresh)
     , ((modm, xK_g), spawn "gvim")
     , ((modm, xK_x), spawn "~/scala-ide/eclipse")
+    , ((modm .|. shiftMask, xK_t), namedScratchpadAction myScratchpads "term")
+    , ((modm .|. shiftMask, xK_n), namedScratchpadAction myScratchpads "keep")
     , ((modm .|. shiftMask, xK_q), spawn "xfce4-session-logout")
     , ((modm .|. shiftMask, xK_b), spawn "~/Dropbox/Scala/snapdim/target/start")
 
@@ -133,9 +136,10 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
 
 -- Layouts
 ------------------------------------------------------------------------
-myLayout = avoidStruts $ tiled ||| Mirror tiled ||| Full
+myLayout = smartBorders $ spacing 1 $ avoidStruts $ tiled ||| max
   where
-    tiled = ResizableTall 1 (3/100) (3/5) []
+    tiled = named "Tall" $ ResizableTall 1 (3/100) (3/5) []
+    max = named "Max" Full
 
 -- Window rules:
 -- > xprop | grep WM_CLASS
@@ -144,57 +148,59 @@ myManageHook = manageDocks <+> composeAll
     [ isFullscreen --> doFullFloat
     , className =? "Xfce4-notifyd" --> doIgnore
     , className =? "Conky" --> doIgnore
-    , className =? "Xfce4-appfinder" --> doFloat ]
+    , className =? "Xfce4-appfinder" --> doFloat ] 
+    <+> namedScratchpadManageHook myScratchpads
 
--- Event handling
+-- Scratchpads
 -------------------------------------------------------------------------------
-myEventHook = fullscreenEventHook
+myScratchpads = [ NS "term" spawnTerm findTerm managePad
+                , NS "trayer" spawnTrayer findTrayer defaultFloating
+                , NS "keep" spawnKeep findKeep managePad ]
+  where
+    managePad = customFloating $ W.RationalRect l t w h
+      where 
+        h = 0.7       -- height, 70% 
+        w = 0.5       -- width,  50%
+        t = (1 - h)/2 -- centered left/right
+        l = (1 - w)/2 -- centered left/right
+    spawnTerm = "termite -t termite-scratchpad"
+    findTerm = title =? "termite-scratchpad"
+    spawnKeep = "chromium --app=https://drive.google.com/keep"
+    findKeep = resource =? "drive.google.com__keep"
 
 -- Status bars and logging
 -------------------------------------------------------------------------------
 addPad = wrap " " " "
 
-myPP statusPipe = xmobarPP {
-    ppOutput = hPutStrLn statusPipe
-    , ppCurrent = xmobarColor myMainColor myBgColor . addPad
-    , ppHiddenNoWindows = xmobarColor myLowColor "" . addPad
-    , ppHidden = xmobarColor myTextcolor "" . addPad
-    , ppTitle = xmobarColor myTextcolor ""
-    , ppSep = xmobarColor myMainColor myBgColor "  |  "
-}
-
-myLogHook pipe = dynamicLogWithPP (myPP pipe) >> updatePointer (Relative 0.5 0.5)
-
--- Startup hook
--------------------------------------------------------------------------------
-myStartupHook = setWMName "LG3D"
-
--- Configuration structure
--------------------------------------------------------------------------------
-defaults statusPipe = ewmh defaultConfig {
-    -- simple stuff
-    terminal           = "termite",
-    focusFollowsMouse  = True,
-    borderWidth        = 1,
-    modMask            = mod4Mask,
-    workspaces         = ["A", "S", "D", "F", "Z"],
-    normalBorderColor  = myNormalBorderColor,
-    focusedBorderColor = myFocusedBorderColor,
-
-    -- bindings
-    keys               = myKeys,
-    mouseBindings      = myMouseBindings,
-
-    -- hooks, layouts
-    layoutHook         = myLayout,
-    manageHook         = myManageHook,
-    handleEventHook    = myEventHook,
-    logHook            = myLogHook statusPipe,
-    startupHook        = myStartupHook
-}
+myPP statusPipe = namedScratchpadFilterOutWorkspacePP xmobarPP 
+  { ppOutput = hPutStrLn statusPipe
+  , ppCurrent = xmobarColor myMainColor myBgColor . addPad
+  , ppHiddenNoWindows = xmobarColor myLowColor "" . addPad
+  , ppHidden = xmobarColor myTextcolor "" . addPad
+  , ppTitle = xmobarColor myTextcolor ""
+  , ppSep = xmobarColor myMainColor myBgColor "  |  " }
 
 -- Run xmonad with the settings specified. No need to modify this.
 -------------------------------------------------------------------------------
 main = do
-    statusPipe <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
-    xmonad $ defaults statusPipe
+    bar <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
+    xmonad $ ewmh defaultConfig 
+      { terminal           = "termite"
+      , focusFollowsMouse  = True
+      , borderWidth        = 0
+      , modMask            = mod4Mask
+      , workspaces         = ["A", "S", "D", "F", "Z"]
+      , normalBorderColor  = myNormalBorderColor
+      , focusedBorderColor = myFocusedBorderColor
+
+      -- bindings
+      , keys               = myKeys
+      , mouseBindings      = myMouseBindings
+
+      -- hooks, layouts
+      , layoutHook         = myLayout
+      , manageHook         = myManageHook
+      , handleEventHook    = fullscreenEventHook
+      , logHook            = dynamicLogWithPP (myPP bar)
+        >> updatePointer (Relative 0.5 0.5)
+      , startupHook        = setWMName "LG3D" }
