@@ -156,7 +156,6 @@ myPP statusPipe = namedScratchpadFilterOutWorkspacePP xmobarPP
 -------------------------------------------------------------------------------
 main :: IO ()
 main = do
-  writeFile "debugpoop" "test this shit"
   bar <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
   xmonad $ ewmh defaultConfig 
     { terminal           = "termite"
