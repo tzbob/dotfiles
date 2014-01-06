@@ -21,8 +21,8 @@ import XMonad.Util.Run
 import qualified XMonad.StackSet as W
 import qualified Data.Map as M
 
-myMainColor = "#FE526F"
-myBgColor = "#134D76"
+myMainColor = "#BCB1B7"
+myBgColor = "#6E839C"
 myTextcolor = "#EFEFEF"
 myLowColor = "#999999"
 
@@ -154,7 +154,6 @@ myManageHook = manageDocks <+> composeAll
 -- Scratchpads
 -------------------------------------------------------------------------------
 myScratchpads = [ NS "term" spawnTerm findTerm managePad
-                , NS "trayer" spawnTrayer findTrayer defaultFloating
                 , NS "keep" spawnKeep findKeep managePad ]
   where
     managePad = customFloating $ W.RationalRect l t w h
