@@ -3,6 +3,9 @@ import Data.Monoid
 import System.Exit
 import System.IO
 
+import Data.List
+import Text.Regex
+
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.SetWMName
@@ -30,14 +33,25 @@ data ColorScheme = ColorScheme
   , highlight :: String 
   , seperator :: String }
 
-scheme :: ColorScheme
-scheme = ColorScheme
+tempusfugit :: ColorScheme
+tempusfugit = ColorScheme
   { foreground = "#efefef"
-  , background = "#6e839c"
+  , background = "#333333"
   , empty = "#666666"
   , hidden = "#aaaaaa"
   , highlight = "#efefef" 
-  , seperator = "#bcb1b7" }
+  , seperator = "#59bce6" }
+
+surroundings :: ColorScheme
+surroundings = ColorScheme
+  { foreground = "#efefef"
+  , background = "#333333"
+  , empty = "#666666"
+  , hidden = "#aaaaaa"
+  , highlight = "#efefef" 
+  , seperator = "#e66862" }
+
+scheme = tempusfugit
 
 -- Key bindings. Add, modify or remove key bindings here.
 -------------------------------------------------------------------------------
@@ -76,18 +90,26 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
   -- Programs
   , ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
   , ((modm, xK_p), spawn dmenuCmd)
+  , ((modm, xK_o), spawn j4Command)
   , ((modm, xK_b), spawn "chromium")
   , ((modm, xK_g), spawn "gvim")
   , ((modm, xK_x), spawn "~/scala-ide/eclipse")
+
   , ((modm .|. shiftMask, xK_t), namedScratchpadAction myScratchpads "term")
   , ((modm .|. shiftMask, xK_n), namedScratchpadAction myScratchpads "keep")
+  , ((modm .|. shiftMask, xK_m), namedScratchpadAction myScratchpads "8tracks")
+
   , ((modm .|. shiftMask, xK_b), spawn "~/Dropbox/Scala/snapdim/target/start") ]
     ++ workspaceKeys ++ monitorKeys
   where
-    dmenuCmd = "dmenu_run"
+    dmenuOpts = " -i"
       ++ " -nb \"" ++ (background scheme) ++ "\""
       ++ " -nf \"" ++ (foreground scheme) ++ "\""
       ++ " -sf \"" ++ (highlight scheme) ++ "\""
+    dmenuCmd = "dmenu_run" ++ dmenuOpts
+    j4Command = "j4-dmenu-desktop"
+      -- ++ " --display-binary"
+      ++ " --dmenu='dmenu" ++ dmenuOpts ++ "'"
     workspaceKeys =
       [((m .|. modm, k), windows $ f i)
           | (i, k) <- zip (XMonad.workspaces conf) [xK_a, xK_s, xK_d, xK_f, xK_z]
@@ -122,7 +144,8 @@ myManageHook = manageDocks <+> composeAll
 -- Scratchpads
 -------------------------------------------------------------------------------
 myScratchpads = [ NS "term" spawnTerm findTerm managePad
-                , NS "keep" spawnKeep findKeep managePad ]
+                , NS "keep" spawnKeep findKeep managePad
+                , NS "8tracks" spawn8tracks find8tracks managePad ]
   where
     managePad = customFloating $ W.RationalRect l t w h
       where 
@@ -134,6 +157,8 @@ myScratchpads = [ NS "term" spawnTerm findTerm managePad
     findTerm = title =? "termite-scratchpad"
     spawnKeep = "chromium --app=https://drive.google.com/keep"
     findKeep = resource =? "drive.google.com__keep"
+    spawn8tracks = "chromium --app=http://8tracks.com/"
+    find8tracks = resource =? "8tracks.com"
 
 -- Status bars and logging
 -------------------------------------------------------------------------------
@@ -156,7 +181,14 @@ myPP statusPipe = namedScratchpadFilterOutWorkspacePP xmobarPP
 -------------------------------------------------------------------------------
 main :: IO ()
 main = do
+  barTemplate <- readFile ".xmonad/xmobartemplate.hs"
+  writeFile ".xmonad/xmobar.hs" $ modConfig barMods barTemplate
   bar <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
+
+  dunstTemplate <- readFile ".config/dunst/dunstrctemplate"
+  writeFile ".config/dunst/dunstrc" $ modConfig dunstMods dunstTemplate
+  spawn "dunst"
+
   xmonad $ ewmh defaultConfig 
     { terminal           = "termite"
     , focusFollowsMouse  = True
@@ -174,3 +206,30 @@ main = do
     , handleEventHook    = fullscreenEventHook
     , logHook            = dynamicLogWithPP (myPP bar) >> updatePointer (Relative 0.5 0.5)
     , startupHook        = setWMName "LG3D" }
+    where
+      barMods =
+        [ ("fgColor", fg) 
+        , ("bgColor", bg)
+        , ("template", sep) 
+        , ("date", sep) ] 
+      dunstMods =
+        [ ("color", sep) 
+        , ("background", bg)
+        , ("foreground", fg) 
+        , ("date", sep) ] 
+      fg = foreground scheme
+      bg = background scheme
+      sep = seperator scheme
+
+-- Config modifier
+-------------------------------------------------------------------------------
+modConfig :: [(String, String)] -> String -> String
+modConfig mods contents = unlines $ map (modLine mods) $ lines contents
+
+modLine :: [(String, String)] -> String -> String
+modLine mods line
+  | not $ null $ matchingReplacements = subRegex (mkRegex "@") line color
+  | otherwise = line
+  where
+    color = snd $ head matchingReplacements
+    matchingReplacements = filter (\(match, _) -> isInfixOf match line) mods

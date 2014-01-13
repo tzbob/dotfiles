@@ -33,7 +33,8 @@ export GTK2_RC_FILES="$HOME/.gtkrc-2.0"
 # aliases
 #-------------------------------------------------- 
 
-alias syu="sudo packer -Syu"
+alias o="mimeopen"
+alias syu="sudo aura -Syu && sudo aura -Akua"
 alias df="df -h"
 alias ls="ls -F --color=auto"
 alias grep="grep --color=auto"
@@ -119,6 +120,9 @@ launch() {
   nohup "$@" > /dev/null 2>&1&
 }
 
+search() {
+  aura -Ss $1 && aura -As $1
+}
 ls
 
 source "$HOME/.homesick/repos/homeshick/homeshick.sh"
