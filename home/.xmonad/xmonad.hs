@@ -185,7 +185,7 @@ main = do
   writeFile ".xmonad/xmobar.hs" $ modConfig barMods barTemplate
   bar <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
 
-  dunstTemplate <- readFile ".config/dunst/dunstrctemplate"
+  dunstTemplate <- readFile ".config/dunst/dunstrctemplate.ini"
   writeFile ".config/dunst/dunstrc" $ modConfig dunstMods dunstTemplate
   spawn "dunst"
 
