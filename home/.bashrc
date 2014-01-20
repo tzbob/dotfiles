@@ -33,6 +33,7 @@ export GTK2_RC_FILES="$HOME/.gtkrc-2.0"
 # aliases
 #-------------------------------------------------- 
 
+alias subs="subliminal --languages en nl -q "
 alias o="mimeopen"
 alias syu="sudo aura -Syu && sudo aura -Akua"
 alias df="df -h"
@@ -45,6 +46,7 @@ alias sudo="sudo "
 
 alias b="cd ~/bin"
 alias v="cd /media/data/Videos"
+alias m="cd /media/data/Music"
 alias t="cd ~/Dropbox/thesis/pdfs/"
 alias d="cd ~/Downloads"
 
@@ -64,6 +66,11 @@ complete -cf sudo
 #--------------------------------------------------
 # functions
 #--------------------------------------------------
+
+vid() {
+  subliminal --languages en nl -q $@
+  smplayer $@
+}
 
 extr () {
     if [ -f $1 ] ; then
@@ -121,7 +128,7 @@ launch() {
 }
 
 search() {
-  aura -Ss $1 && aura -As $1
+  aura -Ss "$1" && aura -As "$1"
 }
 ls
 

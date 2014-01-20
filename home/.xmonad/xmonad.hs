@@ -129,9 +129,10 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
 
 -- Layouts
 ------------------------------------------------------------------------
-myLayout = smartBorders $ spacing 1 $ avoidStruts $ tiled ||| max
+myLayout = smartBorders $ spacing 1 $ avoidStruts $ tiled  ||| mirrored ||| max
   where
     tiled = named "Tall" $ ResizableTall 1 (3/100) (3/5) []
+    mirrored = Mirror tiled
     max = named "Max" Full
 
 -- Window rules:
