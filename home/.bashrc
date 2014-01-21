@@ -40,7 +40,9 @@ alias df="df -h"
 alias ls="ls -F --color=auto"
 alias grep="grep --color=auto"
 
-alias vito="vim ~/Dropbox/todo/todo.txt"
+alias sus="systemctl suspend"
+alias hib="systemctl hibernate"
+alias off="systemctl poweroff"
 
 alias sudo="sudo "
 
@@ -68,8 +70,13 @@ complete -cf sudo
 #--------------------------------------------------
 
 vid() {
-  subliminal --languages en nl -q $@
-  smplayer $@
+  subliminal --languages en nl -q $@ 2>&1 /dev/null
+  if [ -f "$@" ]
+  then
+    mimeopen "$@"
+  else
+    mimeopen *$@*
+  fi
 }
 
 extr () {
