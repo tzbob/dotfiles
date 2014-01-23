@@ -11,7 +11,6 @@ Bundle 'gmarik/vundle'
 Bundle 'Raimondi/delimitMate'
 Bundle 'Valloric/YouCompleteMe'
 Bundle 'scrooloose/nerdcommenter'
-Bundle 'bling/vim-airline'
 Bundle 'flazz/vim-colorschemes'
 Bundle 'derekwyatt/vim-scala'
 Bundle 'lambdatoast/elm.vim'
@@ -106,5 +105,7 @@ command! W w !sudo tee % > /dev/null
 
 "" Strip GVIM
 set guioptions=ac
-set guifont=Source\ Code\ Pro\ ExtraLight\ 10
-colors github
+set guifont=Source\ Code\ Pro\ 10
+
+set background=light
+colors solarized

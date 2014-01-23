@@ -5,7 +5,7 @@ scroll_on_keystroke = true
 audible_bell = false
 visible_bell = true
 mouse_autohide = false
-allow_bold = false
+allow_bold = true
 dynamic_title = true
 urgent_on_bell = true
 clickable_url = true
@@ -33,63 +33,28 @@ browser = chromium
 #word_chars = -A-Za-z0-9,./?%&#:_=+@~
 
 [colors]
-background = #FEFEFE
-foreground = #282828
+foreground = #657b83
+foreground_bold = #073642
+background = #ffffff
+cursor = #586e75
 
-foreground_bold = #888888
-foreground_dim = #888888
-cursor = #000000
-
-# if unset, will reverse foreground and background
-highlight = #2f2f2f
-
-# black
-color0 = #000000
-
-# bright_black
-color8 = #282828
-
-# red
-color1 = #a97475
-
-# bright_red
-color9 = #bb9091
-
-# green
-color2 = #75a974
-
-# bright_green
-color10 = #91bb90
-
-# yellow
-color3 = #a9a774
-
-# bright_yellow
-color11 = #bbb990
-
-# blue
-color4 = #7475a9
-
-# bright_blue
-color12 = #9091bb
-
-# magenta
-color5 = #a774a9
-
-# bright_magenta
-color13 = #b990bb
-
-# cyan
-color6 = #74a9a7
-
-# bright_cyan
-color14 = #90bbb9
-
-# white
-color7 = #c3c3c3
-
-# bright_white
-color15 = #AAAAAA
+# colors from color0 to color254 can be set
+color0 = #073642
+color1 = #dc322f
+color2 = #859900
+color3 = #b58900
+color4 = #268bd2
+color5 = #d33682
+color6 = #2aa198
+color7 = #eee8d5
+color8 = #002b36
+color9 = #cb4b16
+color10 = #586e75
+color11 = #657b83
+color12 = #839496
+color13 = #6c71c4
+color14 = #93a1a1
+color15 = #ffffff
 
 [hints]
 #font = Monospace 12
