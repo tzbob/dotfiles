@@ -1,8 +1,8 @@
 Config 
-{ font = "xft:droid sans:size=8" 
+{ font = "xft:inconsolata:size=9" 
 , fgColor = "@" 
 , bgColor = "@" 
-, position = BottomSize C 100 21
+, position = BottomSize C 100 23
 , commands = 
   [ Run Battery ["-t", "<left>"] 100 
   , Run MultiCpu ["-t","<total0>"] 30 

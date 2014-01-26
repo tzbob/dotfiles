@@ -35,21 +35,12 @@ data ColorScheme = ColorScheme
 
 tempusfugit :: ColorScheme
 tempusfugit = ColorScheme
-  { foreground = "#efefef"
-  , background = "#333333"
-  , empty = "#666666"
-  , hidden = "#aaaaaa"
-  , highlight = "#efefef" 
-  , seperator = "#59bce6" }
-
-surroundings :: ColorScheme
-surroundings = ColorScheme
-  { foreground = "#efefef"
-  , background = "#333333"
-  , empty = "#666666"
-  , hidden = "#aaaaaa"
-  , highlight = "#efefef" 
-  , seperator = "#e66862" }
+  { foreground = "#657b83"
+  , background = "#ffffff"
+  , empty = "#dddddd"
+  , hidden = "#657b83"
+  , highlight = "#d33682" 
+  , seperator = "#d33682" }
 
 scheme = tempusfugit
 
@@ -103,12 +94,15 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ++ workspaceKeys ++ monitorKeys
   where
     dmenuOpts = " -i"
-      ++ " -nb \"" ++ (background scheme) ++ "\""
-      ++ " -nf \"" ++ (foreground scheme) ++ "\""
-      ++ " -sf \"" ++ (highlight scheme) ++ "\""
+      ++ " -nf \"" ++ fg ++ "\""
+      ++ " -nb \"" ++ bg ++ "\""
+      ++ " -sf \"" ++ bg ++ "\""
+      ++ " -sb \"" ++ fg ++ "\""
+    fg = highlight scheme
+    bg = background scheme
     dmenuCmd = "dmenu_run" ++ dmenuOpts
     j4Command = "j4-dmenu-desktop"
-      -- ++ " --display-binary"
+      ++ " --display-binary"
       ++ " --dmenu='dmenu" ++ dmenuOpts ++ "'"
     workspaceKeys =
       [((m .|. modm, k), windows $ f i)
