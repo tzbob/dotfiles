@@ -1,4 +1,9 @@
 {
+    "directories": [
+        "~/.xmonad/templates/",
+        "~/.config/termite/"
+    ],
+    
     "copy": {
         "compton.conf": "~/.compton.conf",
         "xinitrc": "~/.xinitrc",
