@@ -46,8 +46,6 @@ alias b="cd ~/bin"
 alias t="cd ~/Torrents"
 alias d="cd ~/Downloads"
 
-source "$HOME/.homesick/repos/homeshick/homeshick.sh"
-
 function chpwd() {
     emulate -L zsh
     ls -a
