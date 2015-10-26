@@ -3,6 +3,10 @@
         "~/.xmonad/templates/",
         "~/.config/termite/"
     ],
+
+    "link": {
+        "spacemacs": "~/.spacemacs"
+    },
     
     "copy": {
         "compton.conf": "~/.compton.conf",
@@ -13,8 +17,6 @@
         "dunstrctemplate.ini": "~/.xmonad/templates/dunstrctemplate.ini",
         "xmobartemplate.hs": "~/.xmonad/templates/xmobartemplate.hs",
         "Xresourcestemplate": "~/.xmonad/templates/.Xresourcestemplate",
-
-        "spacemacs": "~/.spacemacs",
 
         "termite.ini": "~/.config/termite/config",
         "zshenv": "~/.zshenv",

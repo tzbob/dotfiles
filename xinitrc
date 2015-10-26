@@ -23,7 +23,8 @@ syndaemon -i .5 -KtRd &
 
 nitrogen --restore &
 
-#compton &
+compton &
+trayer --align center --widthtype request --height 32 --SetDockType true --alpha 0 --transparent true --tint 0x00fafafa &
 
 nm-applet &
 redshift -l 51.2:4.4 &
