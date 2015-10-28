@@ -62,7 +62,7 @@ scheme = aproprospiate
 
 myLeader :: (ButtonMask, KeySym)
 myLeader = (0, xK_Super_L)
-  
+
 subMap :: [(KeySym, X())] -> X()
 subMap bindings = SM.submap $ M.fromList $ keyBindings ++ keyBindings'
     where
@@ -163,7 +163,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList [ myRootMap conf ]
 myMouseBindings :: XConfig l -> M.Map (KeyMask, Button) (Window -> X ())
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
   [--  ((controlMask .|. shiftMask, button1), (\w -> focus w >> mouseMoveWindow w >> windows W.shiftMaster))
-  -- , ((controlMask .|. shiftMask, button3), (\w -> focus w >> mouseResizeWindow w >> windows W.shiftMaster)) 
+  -- , ((controlMask .|. shiftMask, button3), (\w -> focus w >> mouseResizeWindow w >> windows W.shiftMaster))
   ]
 
 -- Layouts
@@ -235,7 +235,7 @@ main = do
 
   filledXresources <- fillHastache ".xmonad/templates/.Xresourcestemplate"
   writeFile ".Xresources" filledXresources
-  
+
   spawn "dunst"
   spawn "xrdb -merge ~/.Xresources"
 

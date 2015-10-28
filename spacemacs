@@ -27,6 +27,7 @@ values."
      spell-checking
      syntax-checking
      better-defaults
+     colors
 
      git
      version-control
@@ -234,17 +235,23 @@ user code."
  This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
 
+  ;; start processes
+  (defun tzbob/binge-watch () (interactive) (async-shell-command "~/bin/bw" nil))
+  (defun tzbob/termite () (interactive) (start-process "termite" nil "termite"))
+
+  ;; jump dired
   (defun tzbob/dropbox-dired () (interactive) (dired-other-frame "~/Dropbox/"))
   (defun tzbob/downloads-dired () (interactive) (dired-other-frame "~/Downloads/"))
   (defun tzbob/dotfiles-dired () (interactive) (dired-other-frame "~/.dotfiles/"))
   (defun tzbob/torrents-dired () (interactive) (dired-other-frame "~/Torrents/"))
 
   (evil-leader/set-key
+    "asx" 'tzbob/termite
+    "o[b" 'tzbob/binge-watch
     "o."  'tzbob/dotfiles-dired
     "op"  'tzbob/dropbox-dired
     "ot"  'tzbob/torrents-dired
     "od"  'tzbob/downloads-dired)
-
   (setq powerline-default-separator 'nil)
 )
 

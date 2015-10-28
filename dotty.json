@@ -7,7 +7,7 @@
     "link": {
         "spacemacs": "~/.spacemacs"
     },
-    
+
     "copy": {
         "compton.conf": "~/.compton.conf",
         "xinitrc": "~/.xinitrc",
