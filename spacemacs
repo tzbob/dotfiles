@@ -27,7 +27,9 @@ values."
      spell-checking
      syntax-checking
      better-defaults
+
      colors
+     themes-megapack
 
      git
      version-control
@@ -40,10 +42,13 @@ values."
      org
 
      emacs-lisp
+     shell-scripts
      scala
      haskell
      javascript
      html
+     elm
+     latex
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -205,7 +210,7 @@ user code."
        :face state-face)
       anzu
       (buffer-modified buffer-size buffer-id remote-host)
-      ;; major-mode
+      major-mode
       ((flycheck-errors flycheck-warnings flycheck-infos)
        :when active)
       ;; ((minor-modes process)
@@ -217,7 +222,7 @@ user code."
       nyan-cat))
 
   (defvar spacemacs-mode-line-right
-    '(;; (battery :when active)
+    '((battery :when active)
       selection-info
       ((buffer-encoding-abbrev
         point-position
@@ -235,24 +240,40 @@ user code."
  This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
 
+  (setq dired-dwim-target t)
+  (setq dired-listing-switches "-alh")
+  (setq git-magit-status-fullscreen t)
+
+  ;; Auctex scale up previews
+  (set-default 'preview-scale-function 2)
+
+  ;; Pop into a frame http://emacs.stackexchange.com/questions/7116/pop-a-window-into-a-frame
+  (defun tzbob/pop-into-frame ()
+    (interactive)
+    (let ((buffer (current-buffer)))
+      (unless (one-window-p)
+        (delete-window))
+      (display-buffer-pop-up-frame buffer nil)))
+
   ;; start processes
-  (defun tzbob/binge-watch () (interactive) (async-shell-command "~/bin/bw" nil))
+  (defun tzbob/binge-watch () (interactive) (start-process-shell-command "binge-watch" nil "~/bin/bw"))
   (defun tzbob/termite () (interactive) (start-process "termite" nil "termite"))
 
   ;; jump dired
-  (defun tzbob/dropbox-dired () (interactive) (dired-other-frame "~/Dropbox/"))
-  (defun tzbob/downloads-dired () (interactive) (dired-other-frame "~/Downloads/"))
-  (defun tzbob/dotfiles-dired () (interactive) (dired-other-frame "~/.dotfiles/"))
-  (defun tzbob/torrents-dired () (interactive) (dired-other-frame "~/Torrents/"))
+  (defun tzbob/dropbox-dired () (interactive) (dired "~/Dropbox/"))
+  (defun tzbob/downloads-dired () (interactive) (dired "~/Downloads/"))
+  (defun tzbob/dotfiles-dired () (interactive) (dired "~/.dotfiles/"))
+  (defun tzbob/torrents-dired () (interactive) (dired "~/Torrents/"))
 
   (evil-leader/set-key
     "asx" 'tzbob/termite
-    "o[b" 'tzbob/binge-watch
+    "wx"  'tzbob/pop-into-frame
+    "ow"  'tzbob/binge-watch
     "o."  'tzbob/dotfiles-dired
     "op"  'tzbob/dropbox-dired
     "ot"  'tzbob/torrents-dired
     "od"  'tzbob/downloads-dired)
-  (setq powerline-default-separator 'nil)
+  (setq powerline-default-separator 'slant)
 )
 
 ;; Do not write anything past this comment. This is where Emacs will

@@ -92,6 +92,8 @@ myRootMap conf = (myLeader, rootMap)
                        , (xK_i, workspaceSelectMap)
                        , (xK_o, workspaceShiftMap)
 
+                       , (xK_1, sendMessage ToggleStruts)
+
                        , (xK_w, nextScreen)
                        , (xK_e, shiftNextScreen)
 
@@ -119,9 +121,9 @@ myRootMap conf = (myLeader, rootMap)
                                  , (xK_j, windows W.swapDown) ]
 
       resizeMap = recursiveSubMap [ (xK_h, sendMessage Shrink)
-                                 , (xK_l, sendMessage Expand)
-                                 , (xK_j, sendMessage MirrorShrink)
-                                 , (xK_k, sendMessage MirrorExpand) ]
+                                  , (xK_l, sendMessage Expand)
+                                  , (xK_j, sendMessage MirrorShrink)
+                                  , (xK_k, sendMessage MirrorExpand) ]
 
       layoutMap = recursiveSubMap [ (xK_n, sendMessage NextLayout)
                                   , (xK_r, setLayout $ XMonad.layoutHook conf) ]
