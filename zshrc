@@ -22,7 +22,7 @@ source ~/.localAlias
 
 alias subs="subberthehut -qsf "
 alias o="mimeopen"
-alias syu="sudo aura -Syu && sudo aura -Akua"
+alias syu="yaourt -Syu --aur"
 alias df="df -h"
 alias ls="ls -F --color=auto"
 

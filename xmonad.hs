@@ -141,6 +141,7 @@ myRootMap conf = (myLeader, rootMap)
 
       programMap = subMap [ (xK_o, spawn "rofi -show run")
                           , (xK_e, spawn "emacsclient -c")
+                          , (xK_k, spawn "keepass --auto-type")
                           , (xK_b, spawn "chromium")
                           , (xK_t, spawn "termite")
                           , (xK_l, spawn "/bin/sh -c 'xset dpms force off && slock'") ]
