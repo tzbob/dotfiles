@@ -137,6 +137,7 @@ myRootMap conf = (myLeader, rootMap)
                                       , (xK_m, spawn "xbacklight = 100") ]
 
       scratchpadMap = subMap [ (xK_t, namedScratchpadAction myScratchpads "term")
+                             , (xK_k, namedScratchpadAction myScratchpads "keepass")
                              , (xK_w, namedScratchpadAction myScratchpads "weechat") ]
 
       programMap = subMap [ (xK_o, spawn "rofi -show run")
@@ -193,6 +194,7 @@ myManageHook = manageDocks <+> composeAll
 myScratchpads :: [NamedScratchpad]
 myScratchpads = [ NS "term" spawnTerm findTerm managePad
                 , NS "weechat" spawnWC findWC managePad
+                , NS "keepass" spawnKP findKP managePad
                 ]
   where
     managePad = customFloating $ W.RationalRect l t w h
@@ -205,6 +207,8 @@ myScratchpads = [ NS "term" spawnTerm findTerm managePad
     findTerm = title =? "termite-scratchpad"
     spawnWC = "termite --exec='weechat-curses' --title='WEECHAT'"
     findWC = title =? "WEECHAT"
+    spawnKP = "keepass"
+    findKP = className =? "KeePass2"
 
 -- Status bars and logging
 -------------------------------------------------------------------------------
