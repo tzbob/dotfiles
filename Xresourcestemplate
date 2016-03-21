@@ -90,8 +90,8 @@ rofi.kb-page-next:                   Page_Down
 rofi.kb-row-first:                   Home,KP_Home
 rofi.kb-row-last:                    End,KP_End
 rofi.kb-row-select:                  Control+space
-rofi.kb-cancel:                      Escape, Control+[
-rofi.kb-custom-1:                    Alt+
+rofi.kb-cancel:                      Escape
+rofi.kb-custom-1:                    Alt+1
 rofi.kb-custom-2:                    Alt+2
 rofi.kb-custom-3:                    Alt+3
 rofi.kb-custom-4:                    Alt+4

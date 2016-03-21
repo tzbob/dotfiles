@@ -1,7 +1,8 @@
 {
     "directories": [
         "~/.xmonad/templates/",
-        "~/.config/termite/"
+        "~/.config/termite/",
+        "~/.config/zathura/"
     ],
 
     "link": {
@@ -20,7 +21,9 @@
         "zshenv": "~/.zshenv",
         "zshrc": "~/.zshrc",
         "zprofile": "~/.zprofile",
-        "tzbob.zsh-theme": "~/.oh-my-zsh/themes/tzbob.zsh-theme"
+        "tzbob.zsh-theme": "~/.oh-my-zsh/themes/tzbob.zsh-theme",
+
+        "zathurarc": "~/.config/zathura/zathurarc"
     },
 
     "copy": {}

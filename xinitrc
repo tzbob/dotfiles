@@ -9,6 +9,7 @@ fi
 
 eval $(/usr/bin/gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh)
 export GPG_AGENT_INFO SSH_AUTH_SOCK
+export QT_STYLE_OVERRIDE="GTK+"
 
 xset +dpms
 xset dpms 0 0 300
@@ -23,8 +24,8 @@ syndaemon -i .5 -KtRd &
 
 nitrogen --restore &
 
-compton &
-trayer --align center --widthtype request --height 32 --SetDockType true --alpha 0 --transparent true --tint 0x00fafafa &
+# compton &
+trayer --align center --widthtype request --height 32 --SetDockType true --alpha 0 --transparent true --tint 0x00333333 &
 
 nm-applet &
 redshift -l 51.2:4.4 &

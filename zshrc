@@ -1,3 +1,5 @@
+#-*-sh-*-
+
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
@@ -15,10 +17,12 @@ plugins=(git sbt systemd vi-mode extract)
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
-bindkey '\e[A' history-beginning-search-backward
-bindkey '\e[B' history-beginning-search-forward
+bindkey -M vicmd 'k' history-beginning-search-backward
+bindkey -M vicmd 'j' history-beginning-search-forward
 
 source ~/.localAlias
+
+alias em="emacsclient -c -a emacs"
 
 alias subs="subberthehut -qsf "
 alias o="mimeopen"
