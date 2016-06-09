@@ -53,17 +53,14 @@ data ColorScheme = ColorScheme
   , highlight :: String
   , seperator :: String }
 
-aproprospiate :: ColorScheme
-aproprospiate = ColorScheme
-  { foreground = "#eead0e"
-  , background = "#333333"
-  , empty = "#90a4ae"
-  , hidden = "#eead0e"
-  , highlight = "#42a5f5"
-  , seperator = "#ec407a" }
-
 scheme :: ColorScheme
-scheme = aproprospiate
+scheme = ColorScheme
+  { foreground = "#C0C5CE"
+  , background = "#2B303B"
+  , empty = "#90a4ae"
+  , hidden = "#C0C5CE"
+  , highlight = "#B18770"
+  , seperator = "#BF6160" }
 
 myBorderWidth :: Int
 myBorderWidth = 3
@@ -100,7 +97,7 @@ setAllWindowBorders cs =
       _      -> io $ hPutStrLn stderr $ concat ["Warning: bad border color ", show cs]
 
 hlCommandMode = setAllWindowBorders (foreground scheme)
-hlRegularMode = setAllWindowBorders (background scheme)
+hlRegularMode = setAllWindowBorders (highlight scheme)
 hlRecursiveMode = setAllWindowBorders (seperator scheme)
 
 myLeader :: (ButtonMask, KeySym)
@@ -183,12 +180,12 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
       layoutMap = recursiveSubMap [ (xK_n, sendMessage NextLayout)
                                   , (xK_r, setLayout $ XMonad.layoutHook conf) ]
 
-      volumeMap = recursiveSubMap [ (xK_j, spawn "amixer -q set Master 5- unmute")
-                                  , (xK_k, spawn "amixer -q set Master 5+ unmute")
+      volumeMap = recursiveSubMap [ (xK_j, spawn "amixer -D pulse sset Master 5%- unmute")
+                                  , (xK_k, spawn "amixer -D pulse sset Master 5%+ unmute")
                                   , (xK_l, spawn "playerctl next")
                                   , (xK_h, spawn "playerctl previous")
                                   , (xK_Return, spawn "playerctl play-pause")
-                                  , (xK_m, spawn "amixer set Master toggle") ]
+                                  , (xK_m, spawn "amixer -D pulse set Master toggle") ]
 
       brightnessMap = recursiveSubMap [ (xK_j, spawn "xbacklight - 15")
                                       , (xK_k, spawn "xbacklight + 15")
@@ -230,10 +227,10 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
 
 -- Layouts
 ------------------------------------------------------------------------
-myLayout = avoidStruts $ overscan myBorderWidth $ tiled ||| mirrored ||| max
+myLayout = avoidStruts $ tiled ||| mirrored ||| max
   where
-    tiled = named "Tabbed Horizontal" $ windowNavigation $ boringWindows $ subTabbed $ tall
-    mirrored = named "Tabbed Vertical" $ windowNavigation $ boringWindows $ subTabbed $ Mirror $ tall
+    tiled = overscan myBorderWidth $ named "Tabbed Horizontal" $ windowNavigation $ boringWindows $ subTabbed $ tall
+    mirrored = overscan myBorderWidth $ named "Tabbed Vertical" $ windowNavigation $ boringWindows $ subTabbed $ Mirror $ tall
     myTabConfig = defaultTheme { activeTextColor = seperator scheme
                                , activeColor = background scheme
                                , activeBorderColor = background scheme
@@ -320,8 +317,8 @@ main = do
     { terminal           = "termite"
     , focusFollowsMouse  = True
     , borderWidth        = fi myBorderWidth
-    , normalBorderColor  = background scheme
-    , focusedBorderColor = background scheme
+    , normalBorderColor  = highlight scheme
+    , focusedBorderColor = highlight scheme
     , modMask            = mod4Mask
     , workspaces         = ["A", "S", "D", "F", "G", "H", "J", "K", "L"]
 

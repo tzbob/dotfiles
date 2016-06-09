@@ -25,9 +25,7 @@ values."
      ;; ----------------------------------------------------------------
 
      (auto-completion :variables
-                      auto-completion-enable-sort-by-usage t
-                      auto-completion-enable-help-tooltip t
-                      auto-completion-enable-snippets-in-popup t)
+                      auto-completion-enable-help-tooltip t)
 
      spell-checking
      syntax-checking
@@ -117,10 +115,8 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(mccarthy
-                         spacemacs-light
-                         spacemacs-dark
-                         monokai)
+   dotspacemacs-themes '(brin
+                         material-light)
    ;; If non nil the cursor color matches the state color.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
@@ -288,8 +284,6 @@ layers configuration. You are free to put any user code."
   (defun tzbob/binge-watch () (interactive) (start-process-shell-command "binge-watch" nil "~/bin/bw"))
   (defun tzbob/termite () (interactive) (start-process "termite" nil "termite"))
 
-  (defun tzbob/kill-sbt () (interactive) (start-process "pkill" nil "pkill" "-f" "java -Xms1024m -Xmx1024m -XX:ReservedCodeCacheSize=128m -XX:MaxMetaspaceSize=256m -jar /usr/share/sbt/bin/sbt-launch.jar" ))
-
   ;; jump dired
   (defun tzbob/dropbox-dired () (interactive) (dired "~/Dropbox/"))
   (defun tzbob/downloads-dired () (interactive) (dired "~/Downloads/"))
@@ -297,7 +291,7 @@ layers configuration. You are free to put any user code."
   (defun tzbob/torrents-dired () (interactive) (dired "~/Torrents/"))
 
   (evil-leader/set-key
-    "ox"  'tzbob/kill-sbt
+    "/"   'spacemacs/helm-project-smart-do-search-region-or-symbol
     "asx" 'tzbob/termite
     "wx"  'tzbob/pop-into-frame
     "ow"  'tzbob/binge-watch
@@ -308,6 +302,15 @@ layers configuration. You are free to put any user code."
   (setq powerline-default-separator 'arrow)
 
   (setq helm-locate-fuzzy-match nil)
+
+  ;; Ensime
+  (setq ensime-goto-test-config-defaults
+    '(:test-class-names-fn ensime-goto-test--test-class-names
+      :test-class-suffixes ("Test" "Spec" "Specification" "Check")
+      :impl-class-name-fn  ensime-goto-test--impl-class-name
+      :impl-to-test-dir-fn ensime-goto-test--impl-to-test-dir
+      :is-test-dir-fn      ensime-goto-test--is-test-dir
+      :test-template-fn    ensime-goto-test--test-template-scalatest-2))
 
   ;; AUCTeX options
   (setq reftex-plug-into-AUCTeX t)
@@ -320,7 +323,7 @@ layers configuration. You are free to put any user code."
         magic-latex-enable-minibuffer-echo t)
 
   (add-hook 'TeX-mode-hook 'TeX-source-correlate-mode)
-  (add-hook 'TeX-mode-hook 'magic-latex-buffer)
+  ;; (add-hook 'TeX-mode-hook 'magic-latex-buffer)
   (add-hook 'TeX-mode-hook
             (function (lambda ()
                         (add-to-list 'TeX-view-program-list
