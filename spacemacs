@@ -285,6 +285,7 @@ layers configuration. You are free to put any user code."
   (defun tzbob/termite () (interactive) (start-process "termite" nil "termite"))
 
   ;; jump dired
+  (defun tzbob/home-dired () (interactive) (dired "~/"))
   (defun tzbob/dropbox-dired () (interactive) (dired "~/Dropbox/"))
   (defun tzbob/downloads-dired () (interactive) (dired "~/Downloads/"))
   (defun tzbob/dotfiles-dired () (interactive) (dired "~/.dotfiles/"))
@@ -298,6 +299,7 @@ layers configuration. You are free to put any user code."
     "o."  'tzbob/dotfiles-dired
     "op"  'tzbob/dropbox-dired
     "ot"  'tzbob/torrents-dired
+    "oh"  'tzbob/home-dired
     "od"  'tzbob/downloads-dired)
   (setq powerline-default-separator 'arrow)
 
