@@ -25,10 +25,14 @@ syndaemon -i .5 -KtRd &
 nitrogen --restore &
 
 # compton &
-trayer --align center --widthtype request --height 32 --SetDockType true --alpha 0 --transparent true --tint 0x00333333 &
 
 nm-applet &
 redshift -l 51.2:4.4 &
 
+xcape -e 'Alt_L=BackSpace;Alt_R=Return' &
+
 date >> ~/.xmonad/log
+
+trayer --align center --widthtype request --height 40 --tint 0x333333 --transparent true --alpha 0 &
+
 ~/.xmonad/xmonad-x86_64-linux >> ~/.xmonad/log 2>&1

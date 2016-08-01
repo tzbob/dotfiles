@@ -1,55 +1,55 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
-import XMonad
-import System.IO
-
+import Data.Char
 import Data.List
+import qualified Data.Map as M
 import qualified Data.Text.Lazy as L
 
-import qualified Text.Hastache as H
+import Graphics.X11 (Rectangle(..))
+-- TODO: Try and make guide-key
+import Graphics.X11.Xlib.Misc (keysymToString)
+
+import System.IO
+
 import Text.Hastache.Context
+import qualified Text.Hastache as H
 
-import XMonad.Hooks.DynamicLog
-import XMonad.Hooks.ManageDocks
-import XMonad.Hooks.SetWMName
-import XMonad.Hooks.ManageHelpers
-import XMonad.Hooks.EwmhDesktops
-
-import XMonad.Actions.UpdatePointer
+import XMonad
 import XMonad.Actions.CycleWS
-import qualified XMonad.Actions.Submap as SM
-
-import XMonad.Layout.Tabbed(defaultTheme, shrinkText,
-                            TabbedDecoration, addTabs)
+import XMonad.Actions.DynamicWorkspaces
+import XMonad.Actions.Search
+import XMonad.Actions.UpdatePointer
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageHelpers
+import XMonad.Hooks.SetWMName
+import XMonad.Layout.BoringWindows
+import XMonad.Layout.LayoutModifier
+import XMonad.Layout.Named
+import XMonad.Layout.NoBorders
+import XMonad.Layout.ResizableTile
 import XMonad.Layout.Simplest(Simplest(..))
 import XMonad.Layout.SubLayouts(subLayout, onGroup, pullGroup, GroupMsg(..))
-
-import XMonad.Layout.ResizableTile
 import XMonad.Layout.Tabbed
 import XMonad.Layout.WindowNavigation
-import XMonad.Layout.BoringWindows
-
-import XMonad.Layout.NoBorders
-import XMonad.Layout.Named
-
-import XMonad.Util.Themes
+import XMonad.Prompt
+import XMonad.Prompt.Window
+import XMonad.Util.Cursor
+import XMonad.Util.Font (fi)
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.Run
-import XMonad.Util.Cursor
 import XMonad.Util.Themes
 
+import qualified XMonad.Actions.Submap as SM
 import qualified XMonad.StackSet as W
 
-import qualified Data.Map as M
-
-import XMonad.Layout.LayoutModifier
-import Graphics.X11 (Rectangle(..))
-import XMonad.Util.Font (fi)
+-- UI Goodies
+-------------------------------------------------------------------------------
 
 data ColorScheme = ColorScheme
   { foreground :: String
   , background :: String
   , empty :: String
-  , hidden :: String
   , highlight :: String
   , seperator :: String }
 
@@ -57,26 +57,30 @@ scheme :: ColorScheme
 scheme = ColorScheme
   { foreground = "#C0C5CE"
   , background = "#2B303B"
-  , empty = "#90a4ae"
-  , hidden = "#C0C5CE"
+  , empty = "#A3BE8C" --"#B48EAC"
   , highlight = "#B18770"
   , seperator = "#BF6160" }
 
 myBorderWidth :: Int
 myBorderWidth = 3
 
-iosevkaXftString = "xft:Iosevka:size=12"
+iosevkaXftString = "xft:Iosevka:size=13:autohint=true"
 
--- Overscan with borderWidth
-overscan :: Int -> l a -> ModifiedLayout Overscan l a
-overscan p = ModifiedLayout (Overscan p)
+-- GHC doesn't accept these special unicode chars in the parser so workaround
+makeIcon :: Int -> String
+makeIcon chrCode = (colorizer seperator) ("<fn=1>" ++ [chr chrCode] ++ "</fn>")
 
-data Overscan a = Overscan Int deriving (Show, Read)
-
-instance LayoutModifier Overscan a where
-  modifyLayout (Overscan p) ws (Rectangle x y w h) = runLayout ws rect
-    where
-      rect = Rectangle (x - fi p) (y - fi p) (w + 2 * fi p) (h + 2 * fi p)
+myXPConfig = defaultXPConfig { font = iosevkaXftString
+                             , promptBorderWidth = 0
+                             , alwaysHighlight = True
+                             , bgColor = background scheme
+                             , fgColor = foreground scheme
+                             , bgHLight = background scheme
+                             , fgHLight = seperator scheme
+                             , position = Top
+                             , height = 30
+                             , searchPredicate = isInfixOf
+                             }
 
 -- Micro states | Modal WM
 -------------------------------------------------------------------------------
@@ -96,8 +100,8 @@ setAllWindowBorders cs =
       Just c -> mapM_ (setWindowBorder' c) windows
       _      -> io $ hPutStrLn stderr $ concat ["Warning: bad border color ", show cs]
 
-hlCommandMode = setAllWindowBorders (foreground scheme)
-hlRegularMode = setAllWindowBorders (highlight scheme)
+hlRegularMode = setAllWindowBorders (foreground scheme)
+hlCommandMode = setAllWindowBorders (highlight scheme)
 hlRecursiveMode = setAllWindowBorders (seperator scheme)
 
 myLeader :: (ButtonMask, KeySym)
@@ -106,11 +110,11 @@ myLeader = (0, xK_Super_L)
 subMap :: [(KeySym, X())] -> X()
 subMap bindings = SM.submap $ M.fromList allKeys
     where
-      allKeys = keyBindings ++ keyBindings'
-      keyBindings = map (\(k, v) -> ((0, k), v)) bindings
       -- allow Super+Key as well so that keybindings still register if Super is
-      -- down (only usefull if the leader is Super_L or Super_R)
-      keyBindings' = map (\(k, v) -> ((mod4Mask, k), v)) bindings
+      -- down (only useful if the leader is Super_L or Super_R)
+      allKeys = keyBindings 0 ++ keyBindings mod4Mask
+      -- Try to clean up after every action that we do
+      keyBindings mod = map (\(k, v) -> ((mod, k), removeEmptyWorkspaceAfter v)) bindings
 
 recursiveSubMap :: [(KeySym, X())] -> X()
 recursiveSubMap bindings = sm
@@ -130,12 +134,13 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
 
                        , (xK_s, shiftMap)
 
-                       , (xK_space, spawn "rofi -show window")
+                       , (xK_space, windowPromptGoto myXPConfig)
 
                        , (xK_i, workspaceSelectMap)
-                       , (xK_o, workspaceShiftMap)
 
                        , (xK_1, sendMessage ToggleStruts)
+
+                       , (xK_z, toggleWS)
 
                        , (xK_w, nextScreen)
                        , (xK_e, shiftNextScreen)
@@ -152,7 +157,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
 
                        , (xK_c, kill)
                        , (xK_t, withFocused $ windows . W.sink)
-                       , (xK_q, spawn "killall lemonbar; xmonad --recompile; xmonad --restart") ]
+                       , (xK_q, spawn "xmonad --recompile; xmonad --restart") ]
 
       focusMap = recursiveSubMap [ (xK_k, windows W.focusUp)
                                  , (xK_Return, windows W.focusMaster)
@@ -196,7 +201,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                              , (xK_i, namedScratchpadAction myScratchpads "inbox")
                              , (xK_w, namedScratchpadAction myScratchpads "weechat") ]
 
-      programMap = subMap [ (xK_o, spawn "j4-dmenu-desktop --dmenu='rofi -dmenu -p'")
+      programMap = subMap [ (xK_o, spawn "j4-dmenu-desktop --dmenu='rofi -dmenu -i'")
                           , (xK_p, spawn "rofi -show run")
                           , (xK_e, spawn "emacsclient -c -a emacs")
                           , (xK_n, spawn "nmcli_dmenu")
@@ -205,14 +210,11 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                           , (xK_t, spawn "termite")
                           , (xK_l, spawn "/bin/sh -c 'xset dpms force off && slock'") ]
 
-      indexKeySyms = [xK_a, xK_s, xK_d, xK_f, xK_g, xK_h, xK_j, xK_k, xK_l]
-
-      makeWorkspaceMap action =
-          subMap $ zipWith (\workspace key -> (key, windows $ action workspace))
-                     (XMonad.workspaces conf)
-                     indexKeySyms
-      workspaceSelectMap = makeWorkspaceMap W.greedyView
-      workspaceShiftMap = makeWorkspaceMap W.shift
+      workspaceSelectMap = subMap $ [ (xK_c, removeEmptyWorkspace)
+                                    , (xK_Return, addWorkspacePrompt myXPConfig)
+                                    , (xK_space, selectWorkspace myXPConfig)
+                                    , (xK_m, withWorkspace myXPConfig (windows . W.shift))
+                                    , (xK_r, renameWorkspace myXPConfig) ]
 
 myKeys :: XConfig Layout -> M.Map (ButtonMask, KeySym) (X ())
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList [ myRootMap conf ]
@@ -228,10 +230,23 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
 
 -- Layouts
 ------------------------------------------------------------------------
+
+-- Overscan with borderWidth
+overscan :: Int -> l a -> ModifiedLayout Overscan l a
+overscan p = ModifiedLayout (Overscan p)
+
+data Overscan a = Overscan Int deriving (Show, Read)
+
+instance LayoutModifier Overscan a where
+  modifyLayout (Overscan p) ws (Rectangle x y w h) = runLayout ws rect
+    where
+      rect = Rectangle (x - fi p) (y - fi p) (w + 2 * fi p) (h + 2 * fi p)
+
 myLayout = avoidStruts $ tiled ||| mirrored ||| max
   where
-    tiled = overscan myBorderWidth $ named "Tabbed Horizontal" $ windowNavigation $ boringWindows $ subTabbed $ tall
-    mirrored = overscan myBorderWidth $ named "Tabbed Vertical" $ windowNavigation $ boringWindows $ subTabbed $ Mirror $ tall
+    tiled = makeSubTabbed "vertical" tall
+    mirrored = makeSubTabbed "horizontal" (Mirror tall)
+    makeSubTabbed name layout = overscan myBorderWidth $ named name $ windowNavigation $ boringWindows $ subTabbed $ layout
     myTabConfig = defaultTheme { activeTextColor = seperator scheme
                                , activeColor = background scheme
                                , activeBorderColor = background scheme
@@ -240,7 +255,7 @@ myLayout = avoidStruts $ tiled ||| mirrored ||| max
                                , decoHeight = 28
                                }
     subTabbed  x = addTabs shrinkText myTabConfig $ subLayout [] Simplest x
-    max = named "Max" Full
+    max = overscan myBorderWidth $ named "max" Full
     tall = ResizableTall 1 (3/100) (3/5) []
 
 -- Window rules:
@@ -249,8 +264,7 @@ myLayout = avoidStruts $ tiled ||| mirrored ||| max
 
 myManageHook :: ManageHook
 myManageHook = manageDocks <+> composeAll
-    [ isFullscreen --> doFullFloat
-    , resource =? "xmobar" --> doSideFloat SC]
+    [ isFullscreen --> doFullFloat ]
     <+> namedScratchpadManageHook myScratchpads
 
 -- Scratchpads
@@ -280,8 +294,6 @@ myScratchpads = [ NS "term" spawnTerm findTerm managePad
 
 -- Status bars and logging
 -------------------------------------------------------------------------------
-addPad :: String -> String
-addPad = wrap " " " "
 
 colorizer :: (ColorScheme -> String) -> (String -> String)
 colorizer getter = xmobarColor (getter scheme) (background scheme)
@@ -289,15 +301,16 @@ colorizer getter = xmobarColor (getter scheme) (background scheme)
 myPP :: Handle -> PP
 myPP statusPipe = namedScratchpadFilterOutWorkspacePP xmobarPP
   { ppOutput = hPutStrLn statusPipe
-  , ppCurrent = colorizer seperator . wrap "[" "]"
-  , ppHiddenNoWindows = colorizer empty
+  , ppCurrent = colorizer empty
   , ppHidden = colorizer highlight
-  , ppTitle = colorizer foreground
+  , ppTitle = (colorizer foreground) . ((++) $ (makeIcon 61769) ++ " ")
   , ppVisible = colorizer seperator
-  , ppWsSep = "  "
-  , ppSep = (colorizer seperator) "  -  " }
+  , ppLayout = (colorizer foreground) . ((++) $ (makeIcon 62448) ++ " ")
+  , ppWsSep = " "
 
--- Run xmonad with the settings specified. No need to modify this.
+  , ppSep = "   " }
+
+-- Run xmonad & set up desktop 'environment'
 -------------------------------------------------------------------------------
 main :: IO ()
 main = do
@@ -318,10 +331,10 @@ main = do
     { terminal           = "termite"
     , focusFollowsMouse  = True
     , borderWidth        = fi myBorderWidth
-    , normalBorderColor  = highlight scheme
-    , focusedBorderColor = highlight scheme
+    , normalBorderColor  = foreground scheme
+    , focusedBorderColor = foreground scheme
     , modMask            = mod4Mask
-    , workspaces         = ["A", "S", "D", "F", "G", "H", "J", "K", "L"]
+    , workspaces         = ["inbox", "mtfrp"]
 
     -- bindings
     , keys               = myKeys
@@ -334,6 +347,7 @@ main = do
     , logHook            = dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
     , startupHook        = setWMName "LG3D" }
     where
+      -- Fill in Mustache templates
       fillHastache :: FilePath -> IO String
       fillHastache path =
         fmap L.unpack (H.hastacheFile H.defaultConfig path (mkStrContext mu))
