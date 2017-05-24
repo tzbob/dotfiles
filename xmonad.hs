@@ -14,10 +14,12 @@ import Text.Hastache.Context
 import qualified Text.Hastache as H
 
 import XMonad
+import XMonad.Actions.PhysicalScreens
 import XMonad.Actions.CycleWS
 import XMonad.Actions.DynamicWorkspaces
 import XMonad.Actions.Search
 import XMonad.Actions.UpdatePointer
+import XMonad.Config.Desktop
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
@@ -142,8 +144,10 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
 
                        , (xK_z, toggleWS)
 
-                       , (xK_w, nextScreen)
-                       , (xK_e, shiftNextScreen)
+                       -- absolute select of monitors
+                       , (xK_w, onNextNeighbour W.view)
+                       , (xK_e, onNextNeighbour W.shift)
+                       , (xK_q, onNextNeighbour W.greedyView)
 
                        , (xK_r, resizeMap)
                        , (xK_l, layoutMap)
@@ -157,7 +161,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
 
                        , (xK_c, kill)
                        , (xK_t, withFocused $ windows . W.sink)
-                       , (xK_q, spawn "xmonad --recompile; xmonad --restart") ]
+                       , (xK_BackSpace, spawn "xmonad --recompile; xmonad --restart") ]
 
       focusMap = recursiveSubMap [ (xK_k, windows W.focusUp)
                                  , (xK_Return, windows W.focusMaster)
@@ -202,10 +206,11 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                              , (xK_w, namedScratchpadAction myScratchpads "weechat") ]
 
       programMap = subMap [ (xK_o, spawn "j4-dmenu-desktop --dmenu='rofi -dmenu -i'")
+                          , (xK_g, spawn "touch ~/.pomodoro_session")
                           , (xK_p, spawn "rofi -show run")
                           , (xK_e, spawn "emacsclient -c -a emacs")
                           , (xK_n, spawn "nmcli_dmenu")
-                          , (xK_k, spawn "keepass --auto-type")
+                          , (xK_k, spawn "keepass --auto-type-selected")
                           , (xK_b, spawn "chromium")
                           , (xK_t, spawn "termite")
                           , (xK_l, spawn "/bin/sh -c 'xset dpms force off && slock'") ]
@@ -242,7 +247,7 @@ instance LayoutModifier Overscan a where
     where
       rect = Rectangle (x - fi p) (y - fi p) (w + 2 * fi p) (h + 2 * fi p)
 
-myLayout = avoidStruts $ tiled ||| mirrored ||| max
+myLayout = desktopLayoutModifiers $ tiled ||| mirrored ||| max
   where
     tiled = makeSubTabbed "vertical" tall
     mirrored = makeSubTabbed "horizontal" (Mirror tall)
@@ -263,9 +268,9 @@ myLayout = avoidStruts $ tiled ||| mirrored ||| max
 -------------------------------------------------------------------------------
 
 myManageHook :: ManageHook
-myManageHook = manageDocks <+> composeAll
-    [ isFullscreen --> doFullFloat ]
+myManageHook = composeAll [ isFullscreen --> doFullFloat ]
     <+> namedScratchpadManageHook myScratchpads
+    <+> manageHook desktopConfig
 
 -- Scratchpads
 -------------------------------------------------------------------------------
@@ -327,14 +332,14 @@ main = do
   spawn "dunst"
   spawn "xrdb -merge ~/.Xresources"
 
-  xmonad $ ewmh defaultConfig
+  xmonad desktopConfig
     { terminal           = "termite"
     , focusFollowsMouse  = True
     , borderWidth        = fi myBorderWidth
     , normalBorderColor  = foreground scheme
     , focusedBorderColor = foreground scheme
     , modMask            = mod4Mask
-    , workspaces         = ["inbox", "mtfrp"]
+    , workspaces         = ["inbox", "dev", "paper"]
 
     -- bindings
     , keys               = myKeys
@@ -343,9 +348,11 @@ main = do
     -- hooks, layouts
     , layoutHook         = myLayout
     , manageHook         = myManageHook
-    , handleEventHook    = fullscreenEventHook
+    , handleEventHook    = fullscreenEventHook <+> handleEventHook desktopConfig
     , logHook            = dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
-    , startupHook        = setWMName "LG3D" }
+                           <+> logHook desktopConfig
+    , startupHook = startupHook desktopConfig <+> setWMName "LG3D"
+    }
     where
       -- Fill in Mustache templates
       fillHastache :: FilePath -> IO String

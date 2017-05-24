@@ -11,8 +11,9 @@ Config
   , Run Date "%H:%M" "time" 600
   , Run Com "/home/bob/bin/alsavolume" [] "volume" 10
   , Run Com "/home/bob/bin/backlight" [] "backlight" 10
+  , Run CommandReader "pymodoro -l 5 -p ▬ -b ▬ -e ▭ -bp '<fc={{sep}}><fn=1></fn></fc> ' -pp '<fc={{sep}}><fn=1></fn></fc> ' -sp /usr/data/session.wav -sb /usr/data/break.wav" "pomodoro"
   , Run StdinReader ]
 , sepChar = "%"
 , alignSep = "}{"
-, template = "  <fc={{sep}}><fn=1></fn></fc> %StdinReader% }{ <fc={{sep}}><fn=1></fn></fc> %volume%   <fc={{sep}}><fn=1></fn></fc> %backlight%   <fc={{sep}}><fn=1></fn></fc> %multicpu%   <fc={{sep}}><fn=1></fn></fc> %battery%   <fc={{sep}}><fn=1></fn></fc> %date%   <fc={{sep}}><fn=1></fn></fc> %time%   "
+, template = "  <fc={{sep}}><fn=1></fn></fc> %StdinReader% }{  %pomodoro%   <fc={{sep}}><fn=1></fn></fc> %volume%   <fc={{sep}}><fn=1></fn></fc> %backlight%   <fc={{sep}}><fn=1></fn></fc> %multicpu%   <fc={{sep}}><fn=1></fn></fc> %battery%   <fc={{sep}}><fn=1></fn></fc> %date%   <fc={{sep}}><fn=1></fn></fc> %time%   "
 }

@@ -1,0 +1,37 @@
+" Vim Settings
+
+set clipboard=unnamedplus
+
+set surround
+
+let mapleader = " "
+
+" Editor control
+
+nnoremap <leader>qq :source ~/.ideavimrc<cr>
+
+" IDE actions
+
+nnoremap <leader>: :action GotoAction<cr>
+
+nnoremap <leader>o :action FileStructurePopup<cr>
+nnoremap <leader>gt :action GotoTest<cr>
+nnoremap <leader>gd :action GotoDeclaration<cr>
+nnoremap <leader>gu :action FindUsages<cr>
+
+nnoremap <leader>b :action SearchEverywhere<cr>
+nnoremap <leader>e :action RecentFiles<cr>
+nnoremap <leader>t :action ActivateTODOToolWindow<cr>
+
+nnoremap <leader>ro :action OptimizeImports<cr>
+nnoremap <leader>rr :action RenameElement<cr>
+nnoremap <leader>rf :action ScalaFmtFormat<cr>
+noremap <leader>rm :action ExtractMethod<cr>
+noremap <leader>rv :action IntroduceVariable<cr>
+nnoremap <leader>ri :action Inline<cr>
+
+vnoremap < <gv
+vnoremap > >gv
+vmap s S
+
+nnoremap <leader>bc :action ActivateSBTConsoleToolWindow<cr>

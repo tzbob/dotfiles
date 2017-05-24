@@ -10,3 +10,5 @@ export BROWSER='chromium'
 export JAVA_HOME=/usr/lib/jvm/default
 export ANDROID_HOME=/opt/android-sdk
 export QT_STYLE_OVERRIDE="GTK+"
+
+export WINEARCH=win32

@@ -33,6 +33,6 @@ xcape -e 'Alt_L=BackSpace;Alt_R=Return' &
 
 date >> ~/.xmonad/log
 
-trayer --align center --widthtype request --height 40 --tint 0x333333 --transparent true --alpha 0 &
+trayer --align center --widthtype request --height 40 --tint 0x333333 --transparent true --alpha 0 --monitor "primary" &
 
 ~/.xmonad/xmonad-x86_64-linux >> ~/.xmonad/log 2>&1
