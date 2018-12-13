@@ -1,5 +1,5 @@
 Config
-{ font = "xft:Iosevka:size=16"
+{ font = "xft:Iosevka:size=18"
 , additionalFonts = [ "xft:Ionicons:size=18" ]
 , fgColor = "{{fg}}"
 , bgColor = "{{bg}}"

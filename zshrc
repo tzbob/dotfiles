@@ -26,7 +26,7 @@ alias em="emacsclient -c -a emacs"
 
 alias subs="subberthehut -qsf "
 alias o="mimeopen"
-alias syu="yaourt -Syu --aur"
+alias syu="yay"
 alias df="df -h"
 alias ls="ls -F --color=auto"
 
@@ -53,7 +53,7 @@ function umnt() {
 
 function chpwd() {
     emulate -L zsh
-    ls -a
+    exa -a
 }
 
 function pdf2ps2pdf() {

@@ -31,6 +31,7 @@ values."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
+     ocaml
      yaml
      vimscript
      ;; ----------------------------------------------------------------
@@ -157,9 +158,8 @@ values."
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
-   dotspacemacs-default-font '("Iosevka"
-                               :size 16
-                               :weight normal
+   dotspacemacs-default-font '("Fira Code"
+                               :size 20
                                :width normal
                                :powerline-scale 1)
    ;; The leader key
@@ -337,6 +337,20 @@ layers configuration. You are free to put any user code."
   ;; Auctex scale up previews
   (set-default 'preview-scale-function 2)
 
+  ;; https://stackoverflow.com/questions/539984/how-do-i-get-emacs-to-fill-sentences-but-not-paragraphs
+  (defun tzbob/fill-sentence ()
+    (interactive)
+    (save-excursion
+      (or (eq (point) (point-max)) (forward-char))
+      (forward-sentence -1)
+      (indent-relative t)
+      (let ((beg (point))
+            (ix (string-match "LaTeX" mode-name)))
+        (forward-sentence)
+        (if (and ix (equal "LaTeX" (substring mode-name ix)))
+            (LaTeX-fill-region-as-paragraph beg (point))
+          (fill-region-as-paragraph beg (point))))))
+
   ;; Fill to line: http://www.cs.au.dk/~abizjak/emacs/2016/03/06/latex-fill-paragraph.html
   (defun ales/fill-paragraph (&optional P)
     "When called with prefix argument call `fill-paragraph'. Otherwise split the current paragraph into one sentence per line."
@@ -357,11 +371,11 @@ layers configuration. You are free to put any user code."
                 (just-one-space) ;; leaves only one space, point is after it
                 (delete-char -1) ;; delete the space
                 (newline)        ;; and insert a newline
-                (LaTeX-indent-line) ;; I only use this in combination with late, so this makes sense
+                (if (fboundp 'LaTeX-indent-line)
+                    (LaTeX-indent-line))
                 ))))
       ;; otherwise do ordinary fill paragraph
       (fill-paragraph P)))
-  ;; (define-key LaTeX-mode-map (kbd "M-q") 'ales/fill-paragraph)
 
   ;; Pop into a frame http://emacs.stackexchange.com/questions/7116/pop-a-window-into-a-frame
   (defun tzbob/pop-into-frame ()
@@ -372,7 +386,6 @@ layers configuration. You are free to put any user code."
       (display-buffer-pop-up-frame buffer nil)))
 
   ;; start processes
-  (defun tzbob/binge-watch () (interactive) (start-process-shell-command "binge-watch" nil "~/bin/bw"))
   (defun tzbob/termite () (interactive) (start-process "termite" nil "termite"))
 
   ;; jump dired
@@ -387,12 +400,12 @@ layers configuration. You are free to put any user code."
     "/"   'spacemacs/helm-project-smart-do-search-region-or-symbol
     "asx" 'tzbob/termite
     "wx"  'tzbob/pop-into-frame
-    "ow"  'tzbob/binge-watch
     "o."  'tzbob/dotfiles-dired
     "op"  'tzbob/dropbox-dired
     "on"  'tzbob/notes-dired
     "ot"  'tzbob/torrents-dired
     "oh"  'tzbob/home-dired
+    "rf"  'ales/fill-paragraph
     "od"  'tzbob/downloads-dired)
   (setq powerline-default-separator 'arrow)
 
@@ -440,12 +453,19 @@ layers configuration. You are free to put any user code."
   (setq sp-highlight-wrap-tag-overlay nil)
 
   (spacemacs/set-leader-keys-for-major-mode 'org-mode "g" (lambda () "" (interactive) (org-beamer-export-to-pdf 't)))
+
+  (setq load-path (cons "/usr/local/share/hop/site-lisp" load-path))
+  (autoload 'hopjs-mode-hook "hopjs" "Hop.js javascript mode hook" t)
+  (add-hook 'js-mode-hook 'hopjs-mode-hook)
 )
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (utop tuareg caml ocp-indent merlin winum unfill solarized-theme madhat2r-theme fuzzy zenburn-theme yapfify yaml-mode ws-butler which-key web-mode vimrc-mode use-package ujelly-theme toc-org tao-theme tangotango-theme tango-plus-theme sublime-themes spaceline slim-mode shell-pop scad-mode restart-emacs rainbow-mode rainbow-delimiters racket-mode faceup pyvenv pytest pyenv-mode pug-mode powerline pip-requirements phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode orgit organic-green-theme org-projectile org-category-capture org org-pomodoro alert log4e org-plus-contrib org-download org-bullets obsidian-theme neotree mustang-theme move-text monokai-theme moe-theme mmm-mode material-theme markdown-toc markdown-mode magit-gitflow magic-latex-buffer live-py-mode link-hint julia-mode json-mode js2-refactor multiple-cursors jbeans-theme jazz-theme intero insert-shebang inkpot-theme info+ indent-guide hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-swoop helm-projectile helm-make projectile helm-gitignore request helm-flx helm-company helm-c-yasnippet helm-ag gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate gitconfig-mode gitattributes-mode git-timemachine git-link git-gutter-fringe flycheck-pos-tip flycheck-haskell flatland-theme fish-mode fill-column-indicator eyebrowse expand-region exec-path-from-shell evil-surround evil-search-highlight-persist evil-nerd-commenter evil-mc evil-matchit evil-magit magit magit-popup ghub let-alist evil-exchange evil-escape evil-ediff evil-anzu espresso-theme eshell-z eshell-prompt-extras esh-help ensime sbt-mode scala-mode elm-mode dumb-jump dracula-theme diminish diff-hl deft define-word darktooth-theme autothemer darkokai-theme darkburn-theme dakrone-theme cython-mode cyberpunk-theme company-web company-statistics company-shell company-quickhelp company-ghc ghc company-cabal column-enforce-mode color-theme-sanityinc-tomorrow color-identifiers-mode coffee-mode clean-aindent-mode busybee-theme bind-key auto-compile packed auctex-latexmk apropospriate-theme alect-themes aggressive-indent adaptive-wrap ace-window ace-link auto-complete avy anaconda-mode auctex haskell-mode dash-functional tern company highlight iedit smartparens f evil goto-chg undo-tree flycheck flyspell-correct git-commit with-editor yasnippet helm helm-core async skewer-mode js2-mode simple-httpd hydra haml-mode dash s spacemacs-theme zonokai-theme zen-and-art-theme xterm-color wolfram-mode window-numbering web-completion-data web-beautify volatile-highlights vi-tilde-fringe uuidgen underwater-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme tronesque-theme toxi-theme thrift tango-2-theme tagedit sunny-day-theme subatomic256-theme subatomic-theme stan-mode spacegray-theme soothe-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smeargle seti-theme scss-mode sass-mode reverse-theme rainbow-identifiers railscasts-theme quelpa qml-mode pythonic py-isort purple-haze-theme professional-theme pos-tip popwin planet-theme pkg-info pcre2el pastels-on-dark-theme parent-mode paradox org-present open-junk-file omtose-phellack-theme oldlace-theme occidental-theme noflet noctilux-theme niflheim-theme naquadah-theme mwim multi-term monochrome-theme molokai-theme minimal-theme matlab-mode majapahit-theme macrostep lush-theme lorem-ipsum livid-mode linum-relative light-soap-theme less-css-mode json-snatcher json-reformat js-doc ir-black-theme ido-vertical-mode heroku-theme hemisu-theme helm-themes helm-pydoc helm-mode-manager helm-hoogle helm-descbinds helm-css-scss hc-zenburn-theme haskell-snippets golden-ratio gnuplot gntp gitignore-mode git-messenger git-gutter-fringe+ git-gutter gh-md gandalf-theme flyspell-correct-helm flycheck-elm flx-ido flatui-theme firebelly-theme farmhouse-theme fancy-battery evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-numbers evil-lisp-state evil-indent-plus evil-iedit-state evil-args eval-sexp-fu emmet-mode elisp-slime-nav django-theme darkmine-theme dactyl-mode company-tern company-ghci company-auctex company-anaconda color-theme-sanityinc-solarized cmm-mode clues-theme cherry-blossom-theme bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary arduino-mode anzu anti-zenburn-theme ample-zen-theme ample-theme afternoon-theme ace-jump-helm-line ac-ispell)))
  '(safe-local-variable-values (quote ((TeX-command-extra-options . "-shell-escape")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

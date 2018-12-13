@@ -5,7 +5,6 @@ import qualified Data.Map as M
 import qualified Data.Text.Lazy as L
 
 import Graphics.X11 (Rectangle(..))
--- TODO: Try and make guide-key
 import Graphics.X11.Xlib.Misc (keysymToString)
 
 import System.IO
@@ -145,9 +144,9 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                        , (xK_z, toggleWS)
 
                        -- absolute select of monitors
-                       , (xK_w, onNextNeighbour W.view)
-                       , (xK_e, onNextNeighbour W.shift)
-                       , (xK_q, onNextNeighbour W.greedyView)
+                       , (xK_w, onNextNeighbour def W.view)
+                       , (xK_e, onNextNeighbour def W.shift)
+                       , (xK_q, onNextNeighbour def W.greedyView)
 
                        , (xK_r, resizeMap)
                        , (xK_l, layoutMap)
@@ -189,12 +188,12 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
       layoutMap = recursiveSubMap [ (xK_n, sendMessage NextLayout)
                                   , (xK_r, setLayout $ XMonad.layoutHook conf) ]
 
-      volumeMap = recursiveSubMap [ (xK_j, spawn "amixer -D pulse sset Master 5%- unmute")
-                                  , (xK_k, spawn "amixer -D pulse sset Master 5%+ unmute")
+      volumeMap = recursiveSubMap [ (xK_j, spawn "amixer sset Master 5%- unmute")
+                                  , (xK_k, spawn "amixer sset Master 5%+ unmute")
                                   , (xK_l, spawn "playerctl next")
                                   , (xK_h, spawn "playerctl previous")
                                   , (xK_Return, spawn "playerctl play-pause")
-                                  , (xK_m, spawn "amixer -D pulse set Master toggle") ]
+                                  , (xK_m, spawn "amixer set Master toggle") ]
 
       brightnessMap = recursiveSubMap [ (xK_j, spawn "xbacklight - 15")
                                       , (xK_k, spawn "xbacklight + 15")
@@ -206,7 +205,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                              , (xK_w, namedScratchpadAction myScratchpads "weechat") ]
 
       programMap = subMap [ (xK_o, spawn "j4-dmenu-desktop --dmenu='rofi -dmenu -i'")
-                          , (xK_g, spawn "touch ~/.pomodoro_session")
+                          , (xK_g, spawn "echo '25 5' > ~/.pomodoro_session")
                           , (xK_p, spawn "rofi -show run")
                           , (xK_e, spawn "emacsclient -c -a emacs")
                           , (xK_n, spawn "nmcli_dmenu")

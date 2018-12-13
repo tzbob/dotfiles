@@ -9,7 +9,10 @@ fi
 
 eval $(/usr/bin/gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh)
 export GPG_AGENT_INFO SSH_AUTH_SOCK
-export QT_STYLE_OVERRIDE="GTK+"
+
+export QT_QPA_PLATFORMTHEME=qt5ct
+export GDK_SCALE=1.5
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
 
 xset +dpms
 xset dpms 0 0 300
@@ -23,8 +26,6 @@ xsetroot -cursor_name left_ptr
 syndaemon -i .5 -KtRd &
 
 nitrogen --restore &
-
-# compton &
 
 nm-applet &
 redshift -l 51.2:4.4 &
