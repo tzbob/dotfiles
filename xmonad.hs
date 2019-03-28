@@ -4,9 +4,6 @@ import Data.List
 import qualified Data.Map as M
 import qualified Data.Text.Lazy as L
 
-import Graphics.X11 (Rectangle(..))
-import Graphics.X11.Xlib.Misc (keysymToString)
-
 import System.IO
 
 import Text.Hastache.Context
@@ -16,7 +13,6 @@ import XMonad
 import XMonad.Actions.PhysicalScreens
 import XMonad.Actions.CycleWS
 import XMonad.Actions.DynamicWorkspaces
-import XMonad.Actions.Search
 import XMonad.Actions.UpdatePointer
 import XMonad.Config.Desktop
 import XMonad.Hooks.DynamicLog
@@ -24,14 +20,9 @@ import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.SetWMName
-import XMonad.Layout.BoringWindows
 import XMonad.Layout.LayoutModifier
 import XMonad.Layout.Named
-import XMonad.Layout.NoBorders
 import XMonad.Layout.ResizableTile
-import XMonad.Layout.Simplest(Simplest(..))
-import XMonad.Layout.SubLayouts(subLayout, onGroup, pullGroup, GroupMsg(..))
-import XMonad.Layout.Tabbed
 import XMonad.Layout.WindowNavigation
 import XMonad.Prompt
 import XMonad.Prompt.Window
@@ -56,11 +47,11 @@ data ColorScheme = ColorScheme
 
 scheme :: ColorScheme
 scheme = ColorScheme
-  { foreground = "#C0C5CE"
-  , background = "#2B303B"
-  , empty = "#A3BE8C" --"#B48EAC"
-  , highlight = "#B18770"
-  , seperator = "#BF6160" }
+  { foreground = "#e2e6e6"
+  , background = "#919596"
+  , empty = "#e12f2f"
+  , highlight = "#e12f2f"
+  , seperator = "#000" }
 
 myBorderWidth :: Int
 myBorderWidth = 3
@@ -129,13 +120,13 @@ recursiveSubMap bindings = sm
 myRootMap :: XConfig Layout -> ((ButtonMask, KeySym), X ())
 myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
     where
-      rootMap = subMap [ (xK_j, focusDown)
-                       , (xK_k, focusUp)
-                       , (xK_Tab, onGroup W.focusUp')
+      rootMap = subMap [ (xK_j, windows W.focusDown)
+                       , (xK_k, windows W.focusUp)
 
                        , (xK_s, shiftMap)
 
-                       , (xK_space, windowPromptGoto myXPConfig)
+                       , (xK_space, spawn "rofi -show window")
+                       , (xK_BackSpace, spawn "rofi -show window")
 
                        , (xK_i, workspaceSelectMap)
 
@@ -150,7 +141,6 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
 
                        , (xK_r, resizeMap)
                        , (xK_l, layoutMap)
-                       , (xK_m, tabMap)
 
                        , (xK_v, volumeMap)
                        , (xK_b, brightnessMap)
@@ -160,19 +150,11 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
 
                        , (xK_c, kill)
                        , (xK_t, withFocused $ windows . W.sink)
-                       , (xK_BackSpace, spawn "xmonad --recompile; xmonad --restart") ]
+                       , (xK_Delete, spawn "xmonad --recompile; xmonad --restart") ]
 
       focusMap = recursiveSubMap [ (xK_k, windows W.focusUp)
                                  , (xK_Return, windows W.focusMaster)
                                  , (xK_j, windows W.focusDown) ]
-
-      tabMap = recursiveSubMap [ (xK_h, sendMessage $ pullGroup L)
-                               , (xK_l, sendMessage $ pullGroup R)
-                               , (xK_k, sendMessage $ pullGroup U)
-                               , (xK_j, sendMessage $ pullGroup D)
-                               , (xK_m, withFocused (sendMessage . MergeAll))
-                               , (xK_u, withFocused (sendMessage . UnMerge))
-                               ]
 
       shiftMap = recursiveSubMap [ (xK_k, windows W.swapUp)
                                  , (xK_Return, windows W.swapMaster)
@@ -199,16 +181,13 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                                       , (xK_k, spawn "xbacklight + 15")
                                       , (xK_m, spawn "xbacklight = 100") ]
 
-      scratchpadMap = subMap [ (xK_t, namedScratchpadAction myScratchpads "term")
-                             , (xK_k, namedScratchpadAction myScratchpads "keepass")
-                             , (xK_i, namedScratchpadAction myScratchpads "inbox")
-                             , (xK_w, namedScratchpadAction myScratchpads "weechat") ]
+      scratchpadMap = subMap [ (xK_k, namedScratchpadAction myScratchpads "keepass")
+                             ]
 
       programMap = subMap [ (xK_o, spawn "j4-dmenu-desktop --dmenu='rofi -dmenu -i'")
-                          , (xK_g, spawn "echo '25 5' > ~/.pomodoro_session")
+                          , (xK_g, spawn "rofi -dmenu > ~/.pomodoro_session")
                           , (xK_p, spawn "rofi -show run")
                           , (xK_e, spawn "emacsclient -c -a emacs")
-                          , (xK_n, spawn "nmcli_dmenu")
                           , (xK_k, spawn "keepass --auto-type-selected")
                           , (xK_b, spawn "chromium")
                           , (xK_t, spawn "termite")
@@ -217,6 +196,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
       workspaceSelectMap = subMap $ [ (xK_c, removeEmptyWorkspace)
                                     , (xK_Return, addWorkspacePrompt myXPConfig)
                                     , (xK_space, selectWorkspace myXPConfig)
+                                    , (xK_BackSpace, selectWorkspace myXPConfig)
                                     , (xK_m, withWorkspace myXPConfig (windows . W.shift))
                                     , (xK_r, renameWorkspace myXPConfig) ]
 
@@ -248,17 +228,9 @@ instance LayoutModifier Overscan a where
 
 myLayout = desktopLayoutModifiers $ tiled ||| mirrored ||| max
   where
-    tiled = makeSubTabbed "vertical" tall
-    mirrored = makeSubTabbed "horizontal" (Mirror tall)
-    makeSubTabbed name layout = overscan myBorderWidth $ named name $ windowNavigation $ boringWindows $ subTabbed $ layout
-    myTabConfig = defaultTheme { activeTextColor = seperator scheme
-                               , activeColor = background scheme
-                               , activeBorderColor = background scheme
-                               , inactiveBorderColor = background scheme
-                               , fontName = iosevkaXftString
-                               , decoHeight = 28
-                               }
-    subTabbed  x = addTabs shrinkText myTabConfig $ subLayout [] Simplest x
+    tiled = makeSub "vertical" tall
+    mirrored = makeSub "horizontal" (Mirror tall)
+    makeSub name layout = overscan myBorderWidth $ named name $ windowNavigation $ layout
     max = overscan myBorderWidth $ named "max" Full
     tall = ResizableTall 1 (3/100) (3/5) []
 
@@ -275,10 +247,7 @@ myManageHook = composeAll [ isFullscreen --> doFullFloat ]
 -------------------------------------------------------------------------------
 
 myScratchpads :: [NamedScratchpad]
-myScratchpads = [ NS "term" spawnTerm findTerm managePad
-                , NS "weechat" spawnWC findWC managePad
-                , NS "keepass" spawnKP findKP managePad
-                , NS "inbox" spawnIB findIB managePad
+myScratchpads = [ NS "keepass" spawnKP findKP managePad
                 ]
   where
     managePad = customFloating $ W.RationalRect l t w h
@@ -287,14 +256,8 @@ myScratchpads = [ NS "term" spawnTerm findTerm managePad
         w = 0.5       -- width,  50%
         t = (1 - h)/2 -- centered left/right
         l = (1 - w)/2 -- centered left/right
-    spawnTerm = "termite -t termite-scratchpad"
-    findTerm = title =? "termite-scratchpad"
-    spawnWC = "termite --exec='weechat-curses' --title='WEECHAT'"
-    findWC = title =? "WEECHAT"
     spawnKP = "keepass"
     findKP = className =? "KeePass2"
-    spawnIB = "chromium --app='https://inbox.google.com'"
-    findIB = resource =? "inbox.google.com"
 
 -- Status bars and logging
 -------------------------------------------------------------------------------
@@ -305,13 +268,12 @@ colorizer getter = xmobarColor (getter scheme) (background scheme)
 myPP :: Handle -> PP
 myPP statusPipe = namedScratchpadFilterOutWorkspacePP xmobarPP
   { ppOutput = hPutStrLn statusPipe
-  , ppCurrent = colorizer empty
-  , ppHidden = colorizer highlight
-  , ppTitle = (colorizer foreground) . ((++) $ (makeIcon 61769) ++ " ")
+  , ppCurrent = colorizer highlight
+  , ppHidden = colorizer foreground
+  , ppTitle = (colorizer foreground) . ((++) $ (makeIcon 62318) ++ " ")
   , ppVisible = colorizer seperator
   , ppLayout = (colorizer foreground) . ((++) $ (makeIcon 62448) ++ " ")
   , ppWsSep = " "
-
   , ppSep = "   " }
 
 -- Run xmonad & set up desktop 'environment'
