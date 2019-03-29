@@ -13,6 +13,7 @@ import XMonad
 import XMonad.Actions.PhysicalScreens
 import XMonad.Actions.CycleWS
 import XMonad.Actions.DynamicWorkspaces
+import XMonad.Actions.DynamicProjects
 import XMonad.Actions.UpdatePointer
 import XMonad.Config.Desktop
 import XMonad.Hooks.DynamicLog
@@ -125,8 +126,9 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
 
                        , (xK_s, shiftMap)
 
-                       , (xK_space, spawn "rofi -show window")
                        , (xK_BackSpace, spawn "rofi -show window")
+
+                       , (xK_n, ravenMap)
 
                        , (xK_i, workspaceSelectMap)
 
@@ -151,6 +153,10 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                        , (xK_c, kill)
                        , (xK_t, withFocused $ windows . W.sink)
                        , (xK_Delete, spawn "xmonad --recompile; xmonad --restart") ]
+
+      ravenMap = subMap [ (xK_h, raven_send "ToggleNotificationsView")
+                        , (xK_l, raven_send "ClearNotifications")
+                        ]
 
       focusMap = recursiveSubMap [ (xK_k, windows W.focusUp)
                                  , (xK_Return, windows W.focusMaster)
@@ -191,7 +197,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                           , (xK_k, spawn "keepass --auto-type-selected")
                           , (xK_b, spawn "chromium")
                           , (xK_t, spawn "termite")
-                          , (xK_l, spawn "/bin/sh -c 'xset dpms force off && slock'") ]
+                          , (xK_l, spawn "/bin/sh -c 'xset dpms force off && gnome-screensaver-command -l'") ]
 
       workspaceSelectMap = subMap $ [ (xK_c, removeEmptyWorkspace)
                                     , (xK_Return, addWorkspacePrompt myXPConfig)
@@ -199,6 +205,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                                     , (xK_BackSpace, selectWorkspace myXPConfig)
                                     , (xK_m, withWorkspace myXPConfig (windows . W.shift))
                                     , (xK_r, renameWorkspace myXPConfig) ]
+      raven_send method = spawn $ "dbus-send --type=method_call --dest=org.budgie_desktop.Raven /org/budgie_desktop/Raven org.budgie_desktop.Raven." ++ method
 
 myKeys :: XConfig Layout -> M.Map (ButtonMask, KeySym) (X ())
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList [ myRootMap conf ]
@@ -259,6 +266,30 @@ myScratchpads = [ NS "keepass" spawnKP findKP managePad
     spawnKP = "keepass"
     findKP = className =? "KeePass2"
 
+-- Projects
+-------------------------------------------------------------------------------
+
+myProjects :: [Project]
+myProjects =
+  [ Project { projectName      = "inbox"
+            , projectDirectory = "~/"
+            , projectStartHook = Just $ do spawn "chromium"
+            }
+  , Project { projectName      = "emacs"
+            , projectDirectory = "~/"
+            , projectStartHook = Just $ do spawn "emacs"
+            }
+  , Project { projectName      = "media"
+            , projectDirectory = "~/"
+            , projectStartHook = Just $ do spawn "spotify"
+            }
+  , Project { projectName      = "chat"
+            , projectDirectory = "~/"
+            , projectStartHook = Just $ do spawn "signal-desktop"
+                                           -- spawn "chromium --new-window messenger.com"
+            }
+  ]
+
 -- Status bars and logging
 -------------------------------------------------------------------------------
 
@@ -280,27 +311,27 @@ myPP statusPipe = namedScratchpadFilterOutWorkspacePP xmobarPP
 -------------------------------------------------------------------------------
 main :: IO ()
 main = do
-  filledBar <- fillHastache ".xmonad/templates/xmobartemplate.hs"
-  writeFile ".xmonad/xmobar.hs" filledBar
-  bar <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
+  -- filledBar <- fillHastache ".xmonad/templates/xmobartemplate.hs"
+  -- writeFile ".xmonad/xmobar.hs" filledBar
+  -- bar <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
 
-  filledDunst <- fillHastache ".xmonad/templates/dunstrctemplate.ini"
-  writeFile ".config/dunst/dunstrc" filledDunst
+  -- filledDunst <- fillHastache ".xmonad/templates/dunstrctemplate.ini"
+  -- writeFile ".config/dunst/dunstrc" filledDunst
+  -- spawn "dunst"
 
   filledXresources <- fillHastache ".xmonad/templates/.Xresourcestemplate"
   writeFile ".Xresources" filledXresources
 
-  spawn "dunst"
   spawn "xrdb -merge ~/.Xresources"
 
-  xmonad desktopConfig
+  xmonad $ dynamicProjects myProjects desktopConfig
     { terminal           = "termite"
     , focusFollowsMouse  = True
     , borderWidth        = fi myBorderWidth
     , normalBorderColor  = foreground scheme
     , focusedBorderColor = foreground scheme
     , modMask            = mod4Mask
-    , workspaces         = ["inbox", "dev", "paper"]
+    , workspaces         = ["inbox", "media", "chat"]
 
     -- bindings
     , keys               = myKeys
@@ -310,8 +341,8 @@ main = do
     , layoutHook         = myLayout
     , manageHook         = myManageHook
     , handleEventHook    = fullscreenEventHook <+> handleEventHook desktopConfig
-    , logHook            = dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
-                           <+> logHook desktopConfig
+    --, logHook            = dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
+    , logHook            =  logHook desktopConfig >> updatePointer (0.5, 0.5) (0, 0)
     , startupHook = startupHook desktopConfig <+> setWMName "LG3D"
     }
     where
