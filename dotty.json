@@ -2,14 +2,14 @@
     "directories": [
         "~/.xmonad/templates/",
         "~/.config/termite/",
-        "~/.config/zathura/"
+        "~/.config/zathura/",
+        "~/bin"
     ],
 
     "link": {
         "spacemacs": "~/.spacemacs",
         "ideavimrc": "~/.ideavimrc",
 
-        "compton.conf": "~/.compton.conf",
         "xinitrc": "~/.xinitrc",
         "Xmodmap": "~/.Xmodmap",
 
@@ -24,7 +24,9 @@
         "zprofile": "~/.zprofile",
         "tzbob.zsh-theme": "~/.oh-my-zsh/themes/tzbob.zsh-theme",
 
-        "zathurarc": "~/.config/zathura/zathurarc"
+        "zathurarc": "~/.config/zathura/zathurarc",
+
+        "mods": "~/bin/mods"
     },
 
     "copy": {}

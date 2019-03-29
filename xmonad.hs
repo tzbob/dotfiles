@@ -319,8 +319,8 @@ main = do
   -- writeFile ".config/dunst/dunstrc" filledDunst
   -- spawn "dunst"
 
-  filledXresources <- fillHastache ".xmonad/templates/.Xresourcestemplate"
-  writeFile ".Xresources" filledXresources
+  filledXresources <- fillHastache "~/.xmonad/templates/.Xresourcestemplate"
+  writeFile "~/.Xresources" filledXresources
 
   spawn "xrdb -merge ~/.Xresources"
 
