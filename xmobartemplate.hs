@@ -1,9 +1,9 @@
 Config
-{ font = "xft:Iosevka:size=18"
-, additionalFonts = [ "xft:Ionicons:size=18" ]
+{ font = "xft:Roboto Condensed:size=15"
+, additionalFonts = [ "xft:Ionicons:size=15" ]
 , fgColor = "{{fg}}"
 , bgColor = "{{bg}}"
-, position = BottomSize C 100 46
+, position = BottomSize C 100 42
 , commands =
   [ Run Battery ["-t", "<left>"] 100
   , Run MultiCpu ["-t","<total0>"] 30

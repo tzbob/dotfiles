@@ -8,4 +8,5 @@ export LANG=en_US.UTF-8
 export ALTERNATE_EDITOR=vim EDITOR="emacsclient -c -a emacs" VISUAL="emacsclient -c -a emacs"
 export BROWSER='chromium'
 export JAVA_HOME=/usr/lib/jvm/default
-export ANDROID_HOME=/opt/android-sdk
+export ANDROID_HOME=~/Android/SDK
+export _JAVA_AWT_WM_NONREPARENTING=1

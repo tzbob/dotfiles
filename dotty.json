@@ -16,7 +16,7 @@
         "xmonad.hs": "~/.xmonad/xmonad.hs",
         "dunstrctemplate.ini": "~/.xmonad/templates/dunstrctemplate.ini",
         "xmobartemplate.hs": "~/.xmonad/templates/xmobartemplate.hs",
-        "Xresourcestemplate": "~/.xmonad/templates/.Xresourcestemplate",
+        "Xresourcestemplate": "~/.xmonad/templates/Xresourcestemplate",
 
         "termite.ini": "~/.config/termite/config",
         "zshenv": "~/.zshenv",
@@ -25,6 +25,7 @@
         "tzbob.zsh-theme": "~/.oh-my-zsh/themes/tzbob.zsh-theme",
 
         "zathurarc": "~/.config/zathura/zathurarc",
+        "compton.conf": "~/.config/compton.conf",
 
         "mods": "~/bin/mods"
     },

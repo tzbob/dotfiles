@@ -25,7 +25,7 @@ source ~/.localAlias
 alias em="emacsclient -c -a emacs"
 
 alias subs="subberthehut -qsf "
-alias o="mimeopen"
+alias o="xdg-open"
 alias syu="yay"
 alias df="df -h"
 alias ls="ls -F --color=auto"

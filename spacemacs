@@ -35,19 +35,15 @@ values."
      ocaml
      yaml
      vimscript
-     ;; ----------------------------------------------------------------
-     ;; Example of useful layers you may want to use right away.
-     ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
-     ;; <M-m f e R> (Emacs style) to install them.
-     ;; ----------------------------------------------------------------
-
      deft
      vim-powerline
 
      (auto-completion :variables
+                      auto-completion-enable-snippets-in-popup t
+                      auto-completion-enable-sort-by-usage t
                       auto-completion-enable-help-tooltip t)
+     (spell-checking :variables enable-flyspell-auto-completion t)
 
-     spell-checking
      syntax-checking
      better-defaults
 
@@ -67,9 +63,6 @@ values."
      emacs-lisp
      shell-scripts
 
-     ;; (scala :variables
-     ;;        scala-auto-insert-asterisk-in-comments t)
-
      racket
      haskell
      javascript
@@ -84,10 +77,10 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages then consider to create a layer, you can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(magic-latex-buffer, 'ansi-color)
+   dotspacemacs-additional-packages '()
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
-   ;; A list of packages and/or extensions that will not be install and loaded.
+   ;; A list of packages that will not be installed and loaded.
    dotspacemacs-excluded-packages '()
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
@@ -325,11 +318,11 @@ values."
 
 (defun dotspacemacs/user-init ()
   "Initialization function for user code.
-It is called immediately after `dotspacemacs/init'.  You are free to put any
-user code."
-  ;; https://github.com/syl20bnr/spacemacs/issues/6531
-  (push '("melpa-stable" . "stable.melpa.org/packages/") configuration-layer--elpa-archives)
-  (push '(ensime . "melpa-stable") package-pinned-packages)
+It is called immediately after `dotspacemacs/init', before layer configuration
+executes.
+ This function is mostly useful for variables that need to be set
+before packages are loaded. If you are unsure, you should try in setting them in
+`dotspacemacs/user-config' first."
   )
 
 (defun dotspacemacs/user-config ()
@@ -338,14 +331,6 @@ This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
 
   (setq browse-url-browser-function 'browse-url-chromium)
-
-  ;; http://www.emacswiki.org/emacs/DiredFindFileOtherFrame
-  ;; (defun dired-find-file-other-frame ()
-  ;;   "In Dired, visit this file or directory in another window."
-  ;;   (interactive)
-  ;;   (find-file-other-frame (dired-get-file-for-visit)))
-  ;; (define-key dired-mode-map "F" 'dired-find-file-other-frame)
-
   (setq dired-dwim-target t)
   (setq dired-listing-switches "-alh")
   (setq git-magit-status-fullscreen t)
@@ -403,7 +388,7 @@ layers configuration. You are free to put any user code."
       (display-buffer-pop-up-frame buffer nil)))
 
   ;; start processes
-  (defun tzbob/termite () (interactive) (start-process "termite" nil "termite"))
+  (defun tzbob/termite () (interactive) (start-process "gnome-terminal" nil "gnome-terminal"))
 
   (require 'ansi-color)
   (defun display-ansi-colors ()
@@ -434,16 +419,6 @@ layers configuration. You are free to put any user code."
 
   (setq helm-locate-fuzzy-match nil)
 
-  ;; Ensime
-
-  (defun bob-sbt-do-scalafmt ()
-    (interactive)
-    (sbt-command "scalafmt")
-    )
-  (spacemacs/set-leader-keys-for-major-mode 'scala-mode
-    "rf"     'bob-sbt-do-scalafmt
-    )
-
   ;; AUCTeX options
   (setq reftex-plug-into-AUCTeX t)
   (setq TeX-view-program-selection '((output-pdf "zathura")))
@@ -455,7 +430,6 @@ layers configuration. You are free to put any user code."
         magic-latex-enable-minibuffer-echo t)
 
   (add-hook 'TeX-mode-hook 'TeX-source-correlate-mode)
-  ;; (add-hook 'TeX-mode-hook 'magic-latex-buffer)
   (add-hook 'TeX-mode-hook
             (function (lambda ()
                         (add-to-list 'TeX-view-program-list
@@ -486,13 +460,14 @@ layers configuration. You are free to put any user code."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(evil-want-Y-yank-to-eol nil)
  '(package-selected-packages
    (quote
-    (white-sand-theme rebecca-theme org-mime exotica-theme fringe-helper git-gutter+ epl flx transient reformatter bind-map popup rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby utop tuareg caml ocp-indent merlin winum unfill solarized-theme madhat2r-theme fuzzy zenburn-theme yapfify yaml-mode ws-butler which-key web-mode vimrc-mode use-package ujelly-theme toc-org tao-theme tangotango-theme tango-plus-theme sublime-themes spaceline slim-mode shell-pop scad-mode restart-emacs rainbow-mode rainbow-delimiters racket-mode faceup pyvenv pytest pyenv-mode pug-mode powerline pip-requirements phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode orgit organic-green-theme org-projectile org-category-capture org org-pomodoro alert log4e org-plus-contrib org-download org-bullets obsidian-theme neotree mustang-theme move-text monokai-theme moe-theme mmm-mode material-theme markdown-toc markdown-mode magit-gitflow magic-latex-buffer live-py-mode link-hint julia-mode json-mode js2-refactor multiple-cursors jbeans-theme jazz-theme intero insert-shebang inkpot-theme info+ indent-guide hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-swoop helm-projectile helm-make projectile helm-gitignore request helm-flx helm-company helm-c-yasnippet helm-ag gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate gitconfig-mode gitattributes-mode git-timemachine git-link git-gutter-fringe flycheck-pos-tip flycheck-haskell flatland-theme fish-mode fill-column-indicator eyebrowse expand-region exec-path-from-shell evil-surround evil-search-highlight-persist evil-nerd-commenter evil-mc evil-matchit evil-magit magit magit-popup ghub let-alist evil-exchange evil-escape evil-ediff evil-anzu espresso-theme eshell-z eshell-prompt-extras esh-help ensime sbt-mode scala-mode elm-mode dumb-jump dracula-theme diminish diff-hl deft define-word darktooth-theme autothemer darkokai-theme darkburn-theme dakrone-theme cython-mode cyberpunk-theme company-web company-statistics company-shell company-quickhelp company-ghc ghc company-cabal column-enforce-mode color-theme-sanityinc-tomorrow color-identifiers-mode coffee-mode clean-aindent-mode busybee-theme bind-key auto-compile packed auctex-latexmk apropospriate-theme alect-themes aggressive-indent adaptive-wrap ace-window ace-link auto-complete avy anaconda-mode auctex haskell-mode dash-functional tern company highlight iedit smartparens f evil goto-chg undo-tree flycheck flyspell-correct git-commit with-editor yasnippet helm helm-core async skewer-mode js2-mode simple-httpd hydra haml-mode dash s spacemacs-theme zonokai-theme zen-and-art-theme xterm-color wolfram-mode window-numbering web-completion-data web-beautify volatile-highlights vi-tilde-fringe uuidgen underwater-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme tronesque-theme toxi-theme thrift tango-2-theme tagedit sunny-day-theme subatomic256-theme subatomic-theme stan-mode spacegray-theme soothe-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smeargle seti-theme scss-mode sass-mode reverse-theme rainbow-identifiers railscasts-theme quelpa qml-mode pythonic py-isort purple-haze-theme professional-theme pos-tip popwin planet-theme pkg-info pcre2el pastels-on-dark-theme parent-mode paradox org-present open-junk-file omtose-phellack-theme oldlace-theme occidental-theme noflet noctilux-theme niflheim-theme naquadah-theme mwim multi-term monochrome-theme molokai-theme minimal-theme matlab-mode majapahit-theme macrostep lush-theme lorem-ipsum livid-mode linum-relative light-soap-theme less-css-mode json-snatcher json-reformat js-doc ir-black-theme ido-vertical-mode heroku-theme hemisu-theme helm-themes helm-pydoc helm-mode-manager helm-hoogle helm-descbinds helm-css-scss hc-zenburn-theme haskell-snippets golden-ratio gnuplot gntp gitignore-mode git-messenger git-gutter-fringe+ git-gutter gh-md gandalf-theme flyspell-correct-helm flycheck-elm flx-ido flatui-theme firebelly-theme farmhouse-theme fancy-battery evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-numbers evil-lisp-state evil-indent-plus evil-iedit-state evil-args eval-sexp-fu emmet-mode elisp-slime-nav django-theme darkmine-theme dactyl-mode company-tern company-ghci company-auctex company-anaconda color-theme-sanityinc-solarized cmm-mode clues-theme cherry-blossom-theme bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary arduino-mode anzu anti-zenburn-theme ample-zen-theme ample-theme afternoon-theme ace-jump-helm-line ac-ispell)))
+    (flyspell-popup lv white-sand-theme rebecca-theme org-mime exotica-theme fringe-helper git-gutter+ epl flx transient reformatter bind-map popup rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby utop tuareg caml ocp-indent merlin winum unfill solarized-theme madhat2r-theme fuzzy zenburn-theme yapfify yaml-mode ws-butler which-key web-mode vimrc-mode use-package ujelly-theme toc-org tao-theme tangotango-theme tango-plus-theme sublime-themes spaceline slim-mode shell-pop scad-mode restart-emacs rainbow-mode rainbow-delimiters racket-mode faceup pyvenv pytest pyenv-mode pug-mode powerline pip-requirements phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode orgit organic-green-theme org-projectile org-category-capture org org-pomodoro alert log4e org-plus-contrib org-download org-bullets obsidian-theme neotree mustang-theme move-text monokai-theme moe-theme mmm-mode material-theme markdown-toc markdown-mode magit-gitflow magic-latex-buffer live-py-mode link-hint julia-mode json-mode js2-refactor multiple-cursors jbeans-theme jazz-theme intero insert-shebang inkpot-theme info+ indent-guide hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-swoop helm-projectile helm-make projectile helm-gitignore request helm-flx helm-company helm-c-yasnippet helm-ag gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate gitconfig-mode gitattributes-mode git-timemachine git-link git-gutter-fringe flycheck-pos-tip flycheck-haskell flatland-theme fish-mode fill-column-indicator eyebrowse expand-region exec-path-from-shell evil-surround evil-search-highlight-persist evil-nerd-commenter evil-mc evil-matchit evil-magit magit magit-popup ghub let-alist evil-exchange evil-escape evil-ediff evil-anzu espresso-theme eshell-z eshell-prompt-extras esh-help ensime sbt-mode scala-mode elm-mode dumb-jump dracula-theme diminish diff-hl deft define-word darktooth-theme autothemer darkokai-theme darkburn-theme dakrone-theme cython-mode cyberpunk-theme company-web company-statistics company-shell company-quickhelp company-ghc ghc company-cabal column-enforce-mode color-theme-sanityinc-tomorrow color-identifiers-mode coffee-mode clean-aindent-mode busybee-theme bind-key auto-compile packed auctex-latexmk apropospriate-theme alect-themes aggressive-indent adaptive-wrap ace-window ace-link auto-complete avy anaconda-mode auctex haskell-mode dash-functional tern company highlight iedit smartparens f evil goto-chg undo-tree flycheck flyspell-correct git-commit with-editor yasnippet helm helm-core async skewer-mode js2-mode simple-httpd hydra haml-mode dash s spacemacs-theme zonokai-theme zen-and-art-theme xterm-color wolfram-mode window-numbering web-completion-data web-beautify volatile-highlights vi-tilde-fringe uuidgen underwater-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme tronesque-theme toxi-theme thrift tango-2-theme tagedit sunny-day-theme subatomic256-theme subatomic-theme stan-mode spacegray-theme soothe-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smeargle seti-theme scss-mode sass-mode reverse-theme rainbow-identifiers railscasts-theme quelpa qml-mode pythonic py-isort purple-haze-theme professional-theme pos-tip popwin planet-theme pkg-info pcre2el pastels-on-dark-theme parent-mode paradox org-present open-junk-file omtose-phellack-theme oldlace-theme occidental-theme noflet noctilux-theme niflheim-theme naquadah-theme mwim multi-term monochrome-theme molokai-theme minimal-theme matlab-mode majapahit-theme macrostep lush-theme lorem-ipsum livid-mode linum-relative light-soap-theme less-css-mode json-snatcher json-reformat js-doc ir-black-theme ido-vertical-mode heroku-theme hemisu-theme helm-themes helm-pydoc helm-mode-manager helm-hoogle helm-descbinds helm-css-scss hc-zenburn-theme haskell-snippets golden-ratio gnuplot gntp gitignore-mode git-messenger git-gutter-fringe+ git-gutter gh-md gandalf-theme flyspell-correct-helm flycheck-elm flx-ido flatui-theme firebelly-theme farmhouse-theme fancy-battery evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-numbers evil-lisp-state evil-indent-plus evil-iedit-state evil-args eval-sexp-fu emmet-mode elisp-slime-nav django-theme darkmine-theme dactyl-mode company-tern company-ghci company-auctex company-anaconda color-theme-sanityinc-solarized cmm-mode clues-theme cherry-blossom-theme bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary arduino-mode anzu anti-zenburn-theme ample-zen-theme ample-theme afternoon-theme ace-jump-helm-line ac-ispell)))
  '(safe-local-variable-values (quote ((TeX-command-extra-options . "-shell-escape")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:background nil)))))

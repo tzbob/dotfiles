@@ -5,6 +5,8 @@ import qualified Data.Map as M
 import qualified Data.Text.Lazy as L
 
 import System.IO
+import System.Directory
+import XMonad.Util.Run
 
 import Text.Hastache.Context
 import qualified Text.Hastache as H
@@ -48,11 +50,11 @@ data ColorScheme = ColorScheme
 
 scheme :: ColorScheme
 scheme = ColorScheme
-  { foreground = "#e2e6e6"
-  , background = "#919596"
+  { foreground = "#999"
+  , background = "#FFF"
   , empty = "#e12f2f"
   , highlight = "#e12f2f"
-  , seperator = "#000" }
+  , seperator = "#333" }
 
 myBorderWidth :: Int
 myBorderWidth = 3
@@ -154,9 +156,9 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                        , (xK_t, withFocused $ windows . W.sink)
                        , (xK_Delete, spawn "xmonad --recompile; xmonad --restart") ]
 
-      ravenMap = subMap [ (xK_h, raven_send "ToggleNotificationsView")
-                        , (xK_l, raven_send "ClearNotifications")
-                        ]
+      ravenMap = subMap [ (xK_h, ravenSend "ToggleNotificationsView")
+                        , (xK_l, ravenSend "ClearNotifications")
+                        , (xK_space, ravenToggleNotifications) ]
 
       focusMap = recursiveSubMap [ (xK_k, windows W.focusUp)
                                  , (xK_Return, windows W.focusMaster)
@@ -187,7 +189,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                                       , (xK_k, spawn "xbacklight + 15")
                                       , (xK_m, spawn "xbacklight = 100") ]
 
-      scratchpadMap = subMap [ (xK_k, namedScratchpadAction myScratchpads "keepass")
+      scratchpadMap = subMap [ (xK_k, namedScratchpadAction myScratchpads "keepassxc")
                              ]
 
       programMap = subMap [ (xK_o, spawn "j4-dmenu-desktop --dmenu='rofi -dmenu -i'")
@@ -195,9 +197,10 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                           , (xK_p, spawn "rofi -show run")
                           , (xK_e, spawn "emacsclient -c -a emacs")
                           , (xK_k, spawn "keepass --auto-type-selected")
+                          , (xK_n, spawn "rofi -dmenu | xargs -I {} xdg-open 'mailto:tzbobr@gmail.com?subject=Note: {}&body={}'")
                           , (xK_b, spawn "chromium")
-                          , (xK_t, spawn "termite")
-                          , (xK_l, spawn "/bin/sh -c 'xset dpms force off && gnome-screensaver-command -l'") ]
+                          , (xK_t, spawn "gnome-terminal")
+                          , (xK_l, spawn "/bin/sh -c 'xset dpms force off && slock'") ]
 
       workspaceSelectMap = subMap $ [ (xK_c, removeEmptyWorkspace)
                                     , (xK_Return, addWorkspacePrompt myXPConfig)
@@ -205,7 +208,17 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                                     , (xK_BackSpace, selectWorkspace myXPConfig)
                                     , (xK_m, withWorkspace myXPConfig (windows . W.shift))
                                     , (xK_r, renameWorkspace myXPConfig) ]
-      raven_send method = spawn $ "dbus-send --type=method_call --dest=org.budgie_desktop.Raven /org/budgie_desktop/Raven org.budgie_desktop.Raven." ++ method
+      ravenSend method = spawn $ "dbus-send --type=method_call --dest=org.budgie_desktop.Raven /org/budgie_desktop/Raven org.budgie_desktop.Raven." ++ method
+      ravenToggleNotifications = do
+        rawReply <- liftIO $ runProcessWithInput "dbus-send" [ "--type=method_call"
+                                            , "--dest=org.budgie_desktop.Raven"
+                                            , "--print-reply"
+                                            , "/org/budgie_desktop/Raven"
+                                            , "org.budgie_desktop.Raven.GetDoNotDisturbState" ]
+                                            ""
+        if isInfixOf "true" rawReply then
+          ravenSend "SetDoNotDisturb boolean:false"
+        else ravenSend "SetDoNotDisturb boolean:true"
 
 myKeys :: XConfig Layout -> M.Map (ButtonMask, KeySym) (X ())
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList [ myRootMap conf ]
@@ -246,7 +259,9 @@ myLayout = desktopLayoutModifiers $ tiled ||| mirrored ||| max
 -------------------------------------------------------------------------------
 
 myManageHook :: ManageHook
-myManageHook = composeAll [ isFullscreen --> doFullFloat ]
+myManageHook = composeAll [ -- isFullscreen --> doFullFloat
+                           className =? "budgie-helper" --> doIgnore
+                          ]
     <+> namedScratchpadManageHook myScratchpads
     <+> manageHook desktopConfig
 
@@ -254,7 +269,7 @@ myManageHook = composeAll [ isFullscreen --> doFullFloat ]
 -------------------------------------------------------------------------------
 
 myScratchpads :: [NamedScratchpad]
-myScratchpads = [ NS "keepass" spawnKP findKP managePad
+myScratchpads = [ NS "keepassxc" spawnKPXC findKPXC managePad
                 ]
   where
     managePad = customFloating $ W.RationalRect l t w h
@@ -265,6 +280,8 @@ myScratchpads = [ NS "keepass" spawnKP findKP managePad
         l = (1 - w)/2 -- centered left/right
     spawnKP = "keepass"
     findKP = className =? "KeePass2"
+    spawnKPXC = "keepassxc"
+    findKPXC = className =? "keepassxc"
 
 -- Projects
 -------------------------------------------------------------------------------
@@ -277,7 +294,7 @@ myProjects =
             }
   , Project { projectName      = "emacs"
             , projectDirectory = "~/"
-            , projectStartHook = Just $ do spawn "emacs"
+            , projectStartHook = Just $ do spawn "emacsclient -c -a emacs"
             }
   , Project { projectName      = "media"
             , projectDirectory = "~/"
@@ -286,7 +303,8 @@ myProjects =
   , Project { projectName      = "chat"
             , projectDirectory = "~/"
             , projectStartHook = Just $ do spawn "signal-desktop"
-                                           -- spawn "chromium --new-window messenger.com"
+                                           spawn "chromium --app=https://messenger.com"
+                                           spawn "/opt/IGdm/igdm"
             }
   ]
 
@@ -311,21 +329,25 @@ myPP statusPipe = namedScratchpadFilterOutWorkspacePP xmobarPP
 -------------------------------------------------------------------------------
 main :: IO ()
 main = do
-  -- filledBar <- fillHastache ".xmonad/templates/xmobartemplate.hs"
-  -- writeFile ".xmonad/xmobar.hs" filledBar
-  -- bar <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
+  liftIO $ putStrLn "starting XMONAD"
+  h <- getHomeDirectory
 
-  -- filledDunst <- fillHastache ".xmonad/templates/dunstrctemplate.ini"
-  -- writeFile ".config/dunst/dunstrc" filledDunst
-  -- spawn "dunst"
+  filledBar <- fillHastache $ h ++ "/.xmonad/templates/xmobartemplate.hs"
+  writeFile (h ++ "/.xmonad/xmobar.hs") filledBar
 
-  filledXresources <- fillHastache "~/.xmonad/templates/.Xresourcestemplate"
-  writeFile "~/.Xresources" filledXresources
+  filledDunst <- fillHastache $ h ++ "/.xmonad/templates/dunstrctemplate.ini"
+  writeFile (h ++ "/.config/dunst/dunstrc") filledDunst
 
-  spawn "xrdb -merge ~/.Xresources"
+  filledXresources <- fillHastache $ h ++ "/.xmonad/templates/Xresourcestemplate"
+  writeFile (h ++ "/.Xresources") filledXresources
+
+  bar <- spawnPipe "~/.local/bin/xmobar ~/.xmonad/xmobar.hs"
+
+  spawn $ "xrdb -merge " ++ h ++ "/.Xresources"
+  spawn $ "nitrogen --restore"
 
   xmonad $ dynamicProjects myProjects desktopConfig
-    { terminal           = "termite"
+    { terminal           = "gnome-terminal"
     , focusFollowsMouse  = True
     , borderWidth        = fi myBorderWidth
     , normalBorderColor  = foreground scheme
@@ -341,8 +363,8 @@ main = do
     , layoutHook         = myLayout
     , manageHook         = myManageHook
     , handleEventHook    = fullscreenEventHook <+> handleEventHook desktopConfig
-    --, logHook            = dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
-    , logHook            =  logHook desktopConfig >> updatePointer (0.5, 0.5) (0, 0)
+    , logHook            = logHook desktopConfig >> dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
+    --, logHook            =  logHook desktopConfig >> updatePointer (0.5, 0.5) (0, 0)
     , startupHook = startupHook desktopConfig <+> setWMName "LG3D"
     }
     where

@@ -1,6 +1,6 @@
+#!/bin/sh
 xset r rate 250 60 &
-xcape -e 'Alt_L=BackSpace;Alt_R=Return' &
+xmodmap ~/.Xmodmap &
 date >> ~/.xmonad/log
 
-xcompmgr &
-~/.xmonad/xmonad-x86_64-linux --replace >> ~/.xmonad/log 2>&1 &
+#~/.xmonad/xmonad-x86_64-linux --replace >> ~/.xmonad/log 2>&1 &
