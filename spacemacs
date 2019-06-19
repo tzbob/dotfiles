@@ -149,9 +149,11 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(spacemacs-light
-                         hemisu-light
-                         material-light)
+   dotspacemacs-themes '(leuven
+                         whiteboard
+                         material-light
+                         spacemacs-light
+                         hemisu-light)
    ;; If non nil the cursor color matches the state color.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
@@ -415,7 +417,7 @@ layers configuration. You are free to put any user code."
     "oh"  'tzbob/home-dired
     "rf"  'ales/fill-paragraph
     "od"  'tzbob/downloads-dired)
-  (setq powerline-default-separator 'arrow)
+  (setq powerline-default-separator 'butt)
 
   (setq helm-locate-fuzzy-match nil)
 
