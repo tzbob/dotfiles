@@ -61,3 +61,9 @@ function pdf2ps2pdf() {
     pdf2ps "$1" $temp
     ps2pdf $temp min."$1"
 }
+
+runcmd (){ perl -e 'ioctl STDOUT, 0x5412, $_ for split //, <>' ; }
+fh() {
+    ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed -re 's/^\s*[0-9]+\s*//' | runcmd
+}
+eval $(opam env)

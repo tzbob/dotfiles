@@ -1,15 +1,21 @@
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE
+FlexibleContexts,
+FlexibleInstances,
+MultiParamTypeClasses,
+DeriveGeneric #-}
+
 import Data.Char
+import Data.Aeson
 import Data.List
 import qualified Data.Map as M
 import qualified Data.Text.Lazy as L
+import GHC.Generics
+import Text.Microstache
 
 import System.IO
 import System.Directory
 import XMonad.Util.Run
 
-import Text.Hastache.Context
-import qualified Text.Hastache as H
 
 import XMonad
 import XMonad.Actions.PhysicalScreens
@@ -42,19 +48,21 @@ import qualified XMonad.StackSet as W
 -------------------------------------------------------------------------------
 
 data ColorScheme = ColorScheme
-  { foreground :: String
-  , background :: String
+  { fg :: String
+  , bg :: String
   , empty :: String
   , highlight :: String
-  , seperator :: String }
+  , sep :: String } deriving (Generic)
+instance ToJSON ColorScheme
 
 scheme :: ColorScheme
 scheme = ColorScheme
-  { foreground = "#999"
-  , background = "#FFF"
-  , empty = "#e12f2f"
+  { fg = "#000"
+  , bg = "#FFF"
+  , empty = "#ddd"
   , highlight = "#e12f2f"
-  , seperator = "#333" }
+  , sep = "#031552" }
+
 
 myBorderWidth :: Int
 myBorderWidth = 3
@@ -63,15 +71,15 @@ iosevkaXftString = "xft:Iosevka:size=13:autohint=true"
 
 -- GHC doesn't accept these special unicode chars in the parser so workaround
 makeIcon :: Int -> String
-makeIcon chrCode = (colorizer seperator) ("<fn=1>" ++ [chr chrCode] ++ "</fn>")
+makeIcon chrCode = (colorizer sep) ("<fn=1>" ++ [chr chrCode] ++ "</fn>")
 
-myXPConfig = defaultXPConfig { font = iosevkaXftString
+myXPConfig = def { font = iosevkaXftString
                              , promptBorderWidth = 0
                              , alwaysHighlight = True
-                             , bgColor = background scheme
-                             , fgColor = foreground scheme
-                             , bgHLight = background scheme
-                             , fgHLight = seperator scheme
+                             , bgColor = bg scheme
+                             , fgColor = fg scheme
+                             , bgHLight = bg scheme
+                             , fgHLight = sep scheme
                              , position = Top
                              , height = 30
                              , searchPredicate = isInfixOf
@@ -93,11 +101,11 @@ setAllWindowBorders cs =
 
     case c' of
       Just c -> mapM_ (setWindowBorder' c) windows
-      _      -> io $ hPutStrLn stderr $ concat ["Warning: bad border color ", show cs]
+      _      -> io $ hPutStrLn stderr $ "Warning: bad border color " ++ show cs
 
-hlRegularMode = setAllWindowBorders (foreground scheme)
+hlRegularMode = setAllWindowBorders (fg scheme)
 hlCommandMode = setAllWindowBorders (highlight scheme)
-hlRecursiveMode = setAllWindowBorders (seperator scheme)
+hlRecursiveMode = setAllWindowBorders (sep scheme)
 
 myLeader :: (ButtonMask, KeySym)
 myLeader = (0, xK_Super_L)
@@ -109,12 +117,12 @@ subMap bindings = SM.submap $ M.fromList allKeys
       -- down (only useful if the leader is Super_L or Super_R)
       allKeys = keyBindings 0 ++ keyBindings mod4Mask
       -- Try to clean up after every action that we do
-      keyBindings mod = map (\(k, v) -> ((mod, k), removeEmptyWorkspaceAfter v)) bindings
+      keyBindings mod = fmap (\(k, v) -> ((mod, k), removeEmptyWorkspaceAfter v)) bindings
 
 recursiveSubMap :: [(KeySym, X())] -> X()
 recursiveSubMap bindings = sm
     where
-      recursiveBindings = map (\(k, v) -> (k, v >> hlRecursiveMode >> sm)) bindings
+      recursiveBindings = fmap (\(k, v) -> (k, v >> hlRecursiveMode >> sm)) bindings
       sm = subMap recursiveBindings
 
 -- Key bindings. Add, modify or remove key bindings here.
@@ -129,8 +137,6 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                        , (xK_s, shiftMap)
 
                        , (xK_BackSpace, spawn "rofi -show window")
-
-                       , (xK_n, ravenMap)
 
                        , (xK_i, workspaceSelectMap)
 
@@ -155,10 +161,6 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                        , (xK_c, kill)
                        , (xK_t, withFocused $ windows . W.sink)
                        , (xK_Delete, spawn "xmonad --recompile; xmonad --restart") ]
-
-      ravenMap = subMap [ (xK_h, ravenSend "ToggleNotificationsView")
-                        , (xK_l, ravenSend "ClearNotifications")
-                        , (xK_space, ravenToggleNotifications) ]
 
       focusMap = recursiveSubMap [ (xK_k, windows W.focusUp)
                                  , (xK_Return, windows W.focusMaster)
@@ -197,8 +199,8 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                           , (xK_p, spawn "rofi -show run")
                           , (xK_e, spawn "emacsclient -c -a emacs")
                           , (xK_k, spawn "keepass --auto-type-selected")
-                          , (xK_n, spawn "rofi -dmenu | xargs -I {} xdg-open 'mailto:tzbobr@gmail.com?subject=Note: {}&body={}'")
-                          , (xK_b, spawn "chromium")
+                          , (xK_n, spawn "rofi -dmenu | xargs -I {} xdg-open 'mailto:tzbobr@gmail.com?subject=Note:{}&body={}'")
+                          , (xK_b, spawn "firefox")
                           , (xK_t, spawn "gnome-terminal")
                           , (xK_l, spawn "/bin/sh -c 'xset dpms force off && slock'") ]
 
@@ -208,17 +210,6 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                                     , (xK_BackSpace, selectWorkspace myXPConfig)
                                     , (xK_m, withWorkspace myXPConfig (windows . W.shift))
                                     , (xK_r, renameWorkspace myXPConfig) ]
-      ravenSend method = spawn $ "dbus-send --type=method_call --dest=org.budgie_desktop.Raven /org/budgie_desktop/Raven org.budgie_desktop.Raven." ++ method
-      ravenToggleNotifications = do
-        rawReply <- liftIO $ runProcessWithInput "dbus-send" [ "--type=method_call"
-                                            , "--dest=org.budgie_desktop.Raven"
-                                            , "--print-reply"
-                                            , "/org/budgie_desktop/Raven"
-                                            , "org.budgie_desktop.Raven.GetDoNotDisturbState" ]
-                                            ""
-        if isInfixOf "true" rawReply then
-          ravenSend "SetDoNotDisturb boolean:false"
-        else ravenSend "SetDoNotDisturb boolean:true"
 
 myKeys :: XConfig Layout -> M.Map (ButtonMask, KeySym) (X ())
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList [ myRootMap conf ]
@@ -290,21 +281,31 @@ myProjects :: [Project]
 myProjects =
   [ Project { projectName      = "inbox"
             , projectDirectory = "~/"
-            , projectStartHook = Just $ do spawn "chromium"
+            , projectStartHook = Just $ do spawn "firefox"
             }
   , Project { projectName      = "emacs"
             , projectDirectory = "~/"
             , projectStartHook = Just $ do spawn "emacsclient -c -a emacs"
             }
+  , Project { projectName      = "zotero"
+            , projectDirectory = "~/"
+            , projectStartHook = Just $ do spawn "zotero"
+            }
   , Project { projectName      = "media"
             , projectDirectory = "~/"
             , projectStartHook = Just $ do spawn "spotify"
             }
+  , Project { projectName      = "focus1"
+            , projectDirectory = "~/"
+            , projectStartHook = Just $ do spawn "eog -n -f black.png"
+            }
+  , Project { projectName      = "focus2"
+            , projectDirectory = "~/"
+            , projectStartHook = Just $ do spawn "eog -n -f black.png"
+            }
   , Project { projectName      = "chat"
             , projectDirectory = "~/"
-            , projectStartHook = Just $ do spawn "signal-desktop"
-                                           spawn "chromium --app=https://messenger.com"
-                                           spawn "/opt/IGdm/igdm"
+            , projectStartHook = Just $ do spawn "firefox --new-window https://messenger.com"
             }
   ]
 
@@ -312,16 +313,16 @@ myProjects =
 -------------------------------------------------------------------------------
 
 colorizer :: (ColorScheme -> String) -> (String -> String)
-colorizer getter = xmobarColor (getter scheme) (background scheme)
+colorizer getter = xmobarColor (getter scheme) (bg scheme)
 
 myPP :: Handle -> PP
 myPP statusPipe = namedScratchpadFilterOutWorkspacePP xmobarPP
   { ppOutput = hPutStrLn statusPipe
   , ppCurrent = colorizer highlight
-  , ppHidden = colorizer foreground
-  , ppTitle = (colorizer foreground) . ((++) $ (makeIcon 62318) ++ " ")
-  , ppVisible = colorizer seperator
-  , ppLayout = (colorizer foreground) . ((++) $ (makeIcon 62448) ++ " ")
+  , ppHidden = colorizer fg
+  , ppTitle = (colorizer fg) . ((++) $ (makeIcon 62318) ++ " ")
+  , ppVisible = colorizer sep
+  , ppLayout = (colorizer fg) . ((++) $ (makeIcon 62448) ++ " ")
   , ppWsSep = " "
   , ppSep = "   " }
 
@@ -332,26 +333,28 @@ main = do
   liftIO $ putStrLn "starting XMONAD"
   h <- getHomeDirectory
 
-  filledBar <- fillHastache $ h ++ "/.xmonad/templates/xmobartemplate.hs"
+  filledBar <- fillStache $ h ++ "/.xmonad/templates/xmobartemplate.hs"
   writeFile (h ++ "/.xmonad/xmobar.hs") filledBar
 
-  filledDunst <- fillHastache $ h ++ "/.xmonad/templates/dunstrctemplate.ini"
-  writeFile (h ++ "/.config/dunst/dunstrc") filledDunst
+  -- use notification daemon for now
+  -- filledDunst <- fillStache $ h ++ "/.xmonad/templates/dunstrctemplate.ini"
+  -- writeFile (h ++ "/.config/dunst/dunstrc") filledDunst
 
-  filledXresources <- fillHastache $ h ++ "/.xmonad/templates/Xresourcestemplate"
+  filledXresources <- fillStache $ h ++ "/.xmonad/templates/Xresourcestemplate"
   writeFile (h ++ "/.Xresources") filledXresources
 
   bar <- spawnPipe "~/.local/bin/xmobar ~/.xmonad/xmobar.hs"
 
   spawn $ "xrdb -merge " ++ h ++ "/.Xresources"
   spawn $ "nitrogen --restore"
+  spawn "trayer --align center --widthtype request --height 38 --transparent true --alpha 0 --monitor 'primary' --tint 0xeeeeee"
 
   xmonad $ dynamicProjects myProjects desktopConfig
     { terminal           = "gnome-terminal"
     , focusFollowsMouse  = True
     , borderWidth        = fi myBorderWidth
-    , normalBorderColor  = foreground scheme
-    , focusedBorderColor = foreground scheme
+    , normalBorderColor  = fg scheme
+    , focusedBorderColor = fg scheme
     , modMask            = mod4Mask
     , workspaces         = ["inbox", "media", "chat"]
 
@@ -369,10 +372,9 @@ main = do
     }
     where
       -- Fill in Mustache templates
-      fillHastache :: FilePath -> IO String
-      fillHastache path =
-        fmap L.unpack (H.hastacheFile H.defaultConfig path (mkStrContext mu))
-      mu = H.MuVariable . ctx
-      ctx "fg" = foreground scheme
-      ctx "bg" = background scheme
-      ctx "sep" = seperator scheme
+      fillStache :: FilePath -> IO String
+      fillStache path = do
+        template <- compileMustacheFile path
+        let json = toJSON scheme
+        let rendered = renderMustache template json
+        return $ L.unpack rendered

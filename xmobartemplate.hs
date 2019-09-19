@@ -1,5 +1,5 @@
 Config
-{ font = "xft:Roboto Condensed:size=15"
+{ font = "xft:Iosevka:size=15"
 , additionalFonts = [ "xft:Ionicons:size=15" ]
 , fgColor = "{{fg}}"
 , bgColor = "{{bg}}"

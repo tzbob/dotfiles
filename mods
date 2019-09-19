@@ -2,5 +2,3 @@
 xset r rate 250 60 &
 xmodmap ~/.Xmodmap &
 date >> ~/.xmonad/log
-
-#~/.xmonad/xmonad-x86_64-linux --replace >> ~/.xmonad/log 2>&1 &
