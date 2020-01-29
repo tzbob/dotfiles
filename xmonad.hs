@@ -33,6 +33,7 @@ import XMonad.Layout.LayoutModifier
 import XMonad.Layout.Named
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.WindowNavigation
+import XMonad.Layout.ThreeColumns
 import XMonad.Prompt
 import XMonad.Prompt.Window
 import XMonad.Util.Cursor
@@ -237,9 +238,10 @@ instance LayoutModifier Overscan a where
     where
       rect = Rectangle (x - fi p) (y - fi p) (w + 2 * fi p) (h + 2 * fi p)
 
-myLayout = desktopLayoutModifiers $ tiled ||| mirrored ||| max
+myLayout = desktopLayoutModifiers $ tiled ||| mid ||| mirrored ||| max
   where
     tiled = makeSub "vertical" tall
+    mid = ThreeColMid 1 (3/100) (3/7)
     mirrored = makeSub "horizontal" (Mirror tall)
     makeSub name layout = overscan myBorderWidth $ named name $ windowNavigation $ layout
     max = overscan myBorderWidth $ named "max" Full
@@ -272,7 +274,7 @@ myScratchpads = [ NS "keepassxc" spawnKPXC findKPXC managePad
     spawnKP = "keepass"
     findKP = className =? "KeePass2"
     spawnKPXC = "keepassxc"
-    findKPXC = className =? "keepassxc"
+    findKPXC = className =? "KeePassXC"
 
 -- Projects
 -------------------------------------------------------------------------------
