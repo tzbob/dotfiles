@@ -196,9 +196,10 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                              ]
 
       programMap = subMap [ (xK_o, spawn "j4-dmenu-desktop --dmenu='rofi -dmenu -i'")
-                          , (xK_g, spawn "rofi -dmenu > ~/.pomodoro_session")
+                          , (xK_g, spawn "rofi -dmenu > /home/bob/.cache/pomodoro_session")
                           , (xK_p, spawn "rofi -show run")
                           , (xK_e, spawn "emacsclient -c -a emacs")
+                          , (xK_f, spawn "feh -z ~/Dropbox/Photos/Ds3Wallpapers/")
                           , (xK_k, spawn "keepass --auto-type-selected")
                           , (xK_n, spawn "rofi -dmenu | xargs -I {} xdg-open 'mailto:tzbobr@gmail.com?subject=Note:{}&body={}'")
                           , (xK_b, spawn "firefox")
@@ -252,8 +253,8 @@ myLayout = desktopLayoutModifiers $ tiled ||| mid ||| mirrored ||| max
 -------------------------------------------------------------------------------
 
 myManageHook :: ManageHook
-myManageHook = composeAll [ -- isFullscreen --> doFullFloat
-                           className =? "budgie-helper" --> doIgnore
+myManageHook = composeAll [ title =? "KakaoTalkShadowWnd" --> doIgnore
+                          , title =? "KakaoTalkEdgeWnd" --> doIgnore
                           ]
     <+> namedScratchpadManageHook myScratchpads
     <+> manageHook desktopConfig
@@ -338,14 +339,10 @@ main = do
   filledBar <- fillStache $ h ++ "/.xmonad/templates/xmobartemplate.hs"
   writeFile (h ++ "/.xmonad/xmobar.hs") filledBar
 
-  -- use notification daemon for now
-  -- filledDunst <- fillStache $ h ++ "/.xmonad/templates/dunstrctemplate.ini"
-  -- writeFile (h ++ "/.config/dunst/dunstrc") filledDunst
-
   filledXresources <- fillStache $ h ++ "/.xmonad/templates/Xresourcestemplate"
   writeFile (h ++ "/.Xresources") filledXresources
 
-  bar <- spawnPipe "~/.local/bin/xmobar ~/.xmonad/xmobar.hs"
+  bar <- spawnPipe $ h ++ "/.cabal/bin/xmobar " ++ h ++ "/.xmonad/xmobar.hs"
 
   spawn $ "xrdb -merge " ++ h ++ "/.Xresources"
   spawn $ "nitrogen --restore"
@@ -369,7 +366,6 @@ main = do
     , manageHook         = myManageHook
     , handleEventHook    = fullscreenEventHook <+> handleEventHook desktopConfig
     , logHook            = logHook desktopConfig >> dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
-    --, logHook            =  logHook desktopConfig >> updatePointer (0.5, 0.5) (0, 0)
     , startupHook = startupHook desktopConfig <+> setWMName "LG3D"
     }
     where

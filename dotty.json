@@ -13,7 +13,7 @@
         "xinitrc": "~/.xinitrc",
         "Xmodmap": "~/.Xmodmap",
 
-        "xmonad.hs": "~/.xmonad/xmonad.hs",
+        "cabalxmonad/build": "~/.xmonad/build",
         "dunstrctemplate.ini": "~/.xmonad/templates/dunstrctemplate.ini",
         "xmobartemplate.hs": "~/.xmonad/templates/xmobartemplate.hs",
         "Xresourcestemplate": "~/.xmonad/templates/Xresourcestemplate",
