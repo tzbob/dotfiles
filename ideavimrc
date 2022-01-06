@@ -6,32 +6,82 @@ set surround
 
 let mapleader = " "
 
-" Editor control
+" https://youtrack.jetbrains.com/issue/VIM-1970 
+set highlightedyank
 
-nnoremap <leader>qq :source ~/.ideavimrc<cr>
+" ideavim
+noremap <leader>q :source ~/.ideavimrc<CR>
+noremap <leader>h :action HideAllWindows<cr>
 
-" IDE actions
-
-nnoremap <leader>: :action GotoAction<cr>
-
+" IDE actions, general browsing
+noremap <leader><space> :action SearchEverywhere<cr>
 nnoremap <leader>o :action FileStructurePopup<cr>
-nnoremap <leader>gt :action GotoTest<cr>
-nnoremap <leader>gd :action GotoDeclaration<cr>
-nnoremap <leader>gu :action FindUsages<cr>
+noremap <leader>: :action GotoAction<cr>
+noremap <leader>; :action CommentByLineComment<cr>
 
-nnoremap <leader>b :action SearchEverywhere<cr>
-nnoremap <leader>e :action RecentFiles<cr>
-nnoremap <leader>t :action ActivateTODOToolWindow<cr>
+" [B]uffers
+nnoremap <leader>bd :action CloseContent<cr>
+nnoremap <leader>bb :action RecentFiles<cr>
 
-nnoremap <leader>ro :action OptimizeImports<cr>
-nnoremap <leader>rr :action RenameElement<cr>
-nnoremap <leader>rf :action ScalaFmtFormat<cr>
+" [W]indows
+" pop window
+nnoremap <leader>wp :action EditSourceInNewWindow<cr>
+
+" [;] Moving places
+nnoremap ;t :action GotoTest<cr>
+nnoremap ;d :action GotoDeclaration<cr>
+nnoremap ;u :action FindUsages<cr>
+nnoremap ;i :action GotoImplementation<cr>
+nnoremap ;e :action RecentLocations<cr>
+nnoremap ;b :action RecentFiles<cr>
+
+" [F]iles
+noremap <leader>fed :e ~/.ideavimrc<cr>
+noremap <leader>fea :e ~/actionlist.txt<cr>
+noremap <leader>ff :action GotoFile<cr>
+
+" [S]earching "
+noremap <leader>sp :action FindInPath<cr>
+noremap <leader>ss :action Find<cr>
+noremap <leader>sf :action GotoFile<cr>
+noremap <leader>sa :action GotoAction<cr>
+noremap <leader>sn :action GotoClass<cr>
+
+" [Programs
+nnoremap <leader>[n :action ActivateTODOToolWindow<cr>
+nnoremap <leader>[s :action Activatesbt-shell-toolwindowToolWindow<cr>
+
+nnoremap <leader>.t :action Terminal.OpenInTerminal<cr>
+nnoremap <leader>[t :action ActivateTerminalToolWindow<cr>
+
+" [G]it
+noremap <leader>gg :action GitRepositoryActions<cr>
+noremap <leader>gc :action ActivateCommitToolWindow<cr>
+
+noremap <leader>gh :action Vcs.ShowTabbedFileHistory<cr>
+vnoremap <leader>gh :action Vcs.ShowHistoryForBlock<cr>
+
+noremap <leader>gf :action Git.Fetch<cr>
+noremap <leader>gl :action Vcs.Show.Log<cr>
+noremap <leader>ga :action Annotate<cr>
+noremap <leader>gb :action Git.Branches<cr>
+
+" [R]efactoring
+noremap <leader>ro :action OptimizeImports<cr>
+noremap <leader>rr :action RenameElement<cr>
 noremap <leader>rm :action ExtractMethod<cr>
 noremap <leader>rv :action IntroduceVariable<cr>
-nnoremap <leader>ri :action Inline<cr>
+noremap <leader>ri :action Inline<cr>
+
+" [D]ebugging"
+noremap <leader>de :action EvaluateExpression<cr>
+noremap <leader>db :action ToggleLineBreakpoint<cr>
+noremap <leader>dc :action EditBreakpoint<cr>
+noremap <leader>dr :action Resume<cr>
+noremap <leader>dl :action ViewBreakpoints<cr>
+noremap <leader>dd :action Debug<cr>
+noremap <leader>dh :action RunToCursor<cr>
 
 vnoremap < <gv
 vnoremap > >gv
 vmap s S
-
-nnoremap <leader>bc :action ActivateSBTConsoleToolWindow<cr>
