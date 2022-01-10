@@ -9,4 +9,5 @@ export ALTERNATE_EDITOR=vim EDITOR="emacsclient -c -a emacs" VISUAL="emacsclient
 export BROWSER='firefox'
 export JAVA_HOME=/usr/lib/jvm/default
 export ANDROID_HOME=~/Android/SDK
+export SBT_OPTS="-XX:ReservedCodeCacheSize=512m -Xmx4096m -XX:+UseG1GC -XX:SoftRefLRUPolicyMSPerMB=50 -XX:CICompilerCount=4"
 export _JAVA_AWT_WM_NONREPARENTING=1

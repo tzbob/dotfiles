@@ -1,0 +1,25 @@
+# Haskell
+cabalxmonad/dist
+cabalxmonad/dist-*
+cabalxmonad/cabal-dev
+cabalxmonad/*.o
+cabalxmonad/*.hi
+cabalxmonad/*.hie
+cabalxmonad/*.chi
+cabalxmonad/*.chs.h
+cabalxmonad/*.dyn_o
+cabalxmonad/*.dyn_hi
+cabalxmonad/.hpc
+cabalxmonad/.hsenv
+cabalxmonad/.cabal-sandbox/
+cabalxmonad/cabal.sandbox.config
+cabalxmonad/*.prof
+cabalxmonad/*.aux
+cabalxmonad/*.hp
+cabalxmonad/*.eventlog
+cabalxmonad/.stack-work/
+cabalxmonad/cabal.project.local
+cabalxmonad/cabal.project.local~
+cabalxmonad/.HTF/
+cabalxmonad/.ghc.environment.*
+cabalxmonad/cabal.project.local*
