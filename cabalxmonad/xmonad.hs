@@ -34,6 +34,7 @@ import XMonad.Layout.Named
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.ThreeColumns
+import XMonad.Layout.PerScreen
 import XMonad.Prompt
 import XMonad.Prompt.Window
 import XMonad.Util.Cursor
@@ -68,23 +69,23 @@ scheme = ColorScheme
 myBorderWidth :: Int
 myBorderWidth = 3
 
-iosevkaXftString = "xft:Iosevka:size=13:autohint=true"
+iosevkaXftString = "xft:Fira Code Retina:style=Retina:pixelsize=16"
 
 -- GHC doesn't accept these special unicode chars in the parser so workaround
 makeIcon :: Int -> String
 makeIcon chrCode = (colorizer sep) ("<fn=1>" ++ [chr chrCode] ++ "</fn>")
 
 myXPConfig = def { font = iosevkaXftString
-                             , promptBorderWidth = 0
-                             , alwaysHighlight = True
-                             , bgColor = bg scheme
-                             , fgColor = fg scheme
-                             , bgHLight = bg scheme
-                             , fgHLight = sep scheme
-                             , position = Top
-                             , height = 30
-                             , searchPredicate = isInfixOf
-                             }
+		 , promptBorderWidth = 0
+		 , alwaysHighlight = True
+		 , bgColor = bg scheme
+		 , fgColor = fg scheme
+		 , bgHLight = bg scheme
+		 , fgHLight = sep scheme
+		 , position = Top
+		 , height = 30
+		 , searchPredicate = isInfixOf
+		 }
 
 -- Micro states | Modal WM
 -------------------------------------------------------------------------------
@@ -137,7 +138,7 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
 
                        , (xK_s, shiftMap)
 
-                       , (xK_BackSpace, spawn "rofi -show window")
+                       , (xK_BackSpace, spawn "rofi -show window -show-icons")
 
                        , (xK_i, workspaceSelectMap)
 
@@ -178,8 +179,8 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                                   , (xK_j, sendMessage MirrorShrink)
                                   , (xK_k, sendMessage MirrorExpand) ]
 
-      layoutMap = recursiveSubMap [ (xK_n, sendMessage NextLayout)
-                                  , (xK_r, setLayout $ XMonad.layoutHook conf) ]
+      layoutMap = subMap [ (xK_n, sendMessage NextLayout)
+                         , (xK_r, setLayout $ XMonad.layoutHook conf) ]
 
       volumeMap = recursiveSubMap [ (xK_j, spawn "amixer sset Master 5%- unmute")
                                   , (xK_k, spawn "amixer sset Master 5%+ unmute")
@@ -195,16 +196,17 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
       scratchpadMap = subMap [ (xK_k, namedScratchpadAction myScratchpads "keepassxc")
                              ]
 
-      programMap = subMap [ (xK_o, spawn "j4-dmenu-desktop --dmenu='rofi -dmenu -i'")
+      programMap = subMap [ (xK_o, spawn "rofi -show drun -show-icons")
                           , (xK_g, spawn "rofi -dmenu > /home/bob/.cache/pomodoro_session")
-                          , (xK_p, spawn "rofi -show run")
+                          , (xK_p, spawn "rofi -show run -show-icons")
                           , (xK_e, spawn "emacsclient -c -a emacs")
                           , (xK_f, spawn "feh -z ~/Dropbox/Photos/Ds3Wallpapers/")
-                          , (xK_k, spawn "keepass --auto-type-selected")
-                          , (xK_n, spawn "rofi -dmenu | xargs -I {} xdg-open 'mailto:tzbobr@gmail.com?subject=Note:{}&body={}'")
+                          , (xK_k, spawn "xdotool key ctrl+alt+shift+a") -- trigger keepassxc global auto type
+                          , (xK_n, spawn "rofi -dmenu | xargs -I {} xdg-open 'mailto:bob.reynders@cleverbase.com?subject=Note:{}&body={}'")
                           , (xK_b, spawn "firefox")
-                          , (xK_t, spawn "gnome-terminal")
-                          , (xK_l, spawn "/bin/sh -c 'xset dpms force off && slock'") ]
+                          , (xK_c, spawn "google-chrome")
+                          , (xK_t, spawn "xfce4-terminal")
+                          , (xK_l, spawn "gnome-screensaver-command -l") ]
 
       workspaceSelectMap = subMap $ [ (xK_c, removeEmptyWorkspace)
                                     , (xK_Return, addWorkspacePrompt myXPConfig)
@@ -239,12 +241,13 @@ instance LayoutModifier Overscan a where
     where
       rect = Rectangle (x - fi p) (y - fi p) (w + 2 * fi p) (h + 2 * fi p)
 
-myLayout = desktopLayoutModifiers $ tiled ||| mid ||| mirrored ||| max
+myLayout = desktopLayoutModifiers $ mainLayout ||| max
   where
+    mainLayout = ifWider 2560 mid tiled
     tiled = makeSub "vertical" tall
-    mid = ThreeColMid 1 (3/100) (3/7)
+    mid = makeSub "three" $ ThreeColMid 1 (3/100) (3/7)
     mirrored = makeSub "horizontal" (Mirror tall)
-    makeSub name layout = overscan myBorderWidth $ named name $ windowNavigation $ layout
+    makeSub name layout = overscan myBorderWidth $ named name $ layout
     max = overscan myBorderWidth $ named "max" Full
     tall = ResizableTall 1 (3/100) (3/5) []
 
@@ -306,10 +309,6 @@ myProjects =
             , projectDirectory = "~/"
             , projectStartHook = Just $ do spawn "eog -n -f black.png"
             }
-  , Project { projectName      = "chat"
-            , projectDirectory = "~/"
-            , projectStartHook = Just $ do spawn "firefox --new-window https://messenger.com"
-            }
   ]
 
 -- Status bars and logging
@@ -339,14 +338,14 @@ main = do
   filledBar <- fillStache $ h ++ "/.xmonad/templates/xmobartemplate.hs"
   writeFile (h ++ "/.xmonad/xmobar.hs") filledBar
 
-  filledXresources <- fillStache $ h ++ "/.xmonad/templates/Xresourcestemplate"
-  writeFile (h ++ "/.Xresources") filledXresources
+  -- filledXresources <- fillStache $ h ++ "/.xmonad/templates/Xresourcestemplate"
+  -- writeFile (h ++ "/.Xresources") filledXresources
 
-  bar <- spawnPipe $ h ++ "/.cabal/bin/xmobar " ++ h ++ "/.xmonad/xmobar.hs"
+  -- bar <- spawnPipe $ h ++ "/.cabal/bin/xmobar " ++ h ++ "/.xmonad/xmobar.hs"
 
-  spawn $ "xrdb -merge " ++ h ++ "/.Xresources"
-  spawn $ "nitrogen --restore"
-  spawn "trayer --align center --widthtype request --height 38 --transparent true --alpha 0 --monitor 'primary' --tint 0xeeeeee"
+  -- spawn $ "xrdb -merge " ++ h ++ "/.Xresources"
+  -- spawn $ "nitrogen --restore"
+  -- spawn "trayer --align center --widthtype request --height 38 --transparent true --alpha 0 --monitor 'primary' --tint 0xeeeeee"
 
   xmonad $ dynamicProjects myProjects desktopConfig
     { terminal           = "gnome-terminal"
@@ -365,7 +364,8 @@ main = do
     , layoutHook         = myLayout
     , manageHook         = myManageHook
     , handleEventHook    = fullscreenEventHook <+> handleEventHook desktopConfig
-    , logHook            = logHook desktopConfig >> dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
+    , logHook            = logHook desktopConfig >> updatePointer (0.5, 0.5) (0, 0)
+-- >> dynamicLogWithPP (myPP bar) >> updatePointer (0.5, 0.5) (0, 0)
     , startupHook = startupHook desktopConfig <+> setWMName "LG3D"
     }
     where

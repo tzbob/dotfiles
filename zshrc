@@ -24,9 +24,7 @@ source ~/.localAlias
 
 alias em="emacsclient -c -a emacs"
 
-alias subs="subberthehut -qsf "
 alias o="xdg-open"
-alias syu="yay"
 alias df="df -h"
 alias ls="ls -F --color=auto"
 
@@ -37,23 +35,19 @@ alias reb="systemctl reboot"
 
 alias sudo="sudo "
 
-alias b="cd ~/bin"
-alias t="cd ~/Torrents"
-alias d="cd ~/Downloads"
+alias b2w="spd-say 'back to work'"
 
-function mnt() {
-    target=$(ls /dev/sd* | rofi -dmenu)
-    udisksctl mount -b $target
-}
+alias pidofsbtfork="ps aux | grep '[F]orkMain' | awk {'print \$2'}"
+alias pidofsbtrun="ps aux | grep '[c]om.cleverbase.core.platform.Main' | awk {'print \$2'}"
 
-function umnt() {
-    target=$(ls /run/meda/bob/* | rofi -dmenu)
-    udisksctl unmount -p $target
-}
+alias structurizr-lite="docker run -it --rm -p 9004:8080 -v $PWD:/usr/local/structurizr structurizr/lite"
+alias appium="docker run --privileged -d -p 4723:4723  -v /dev/bus/usb:/dev/bus/usb -e ADB_SHELL=true --name container-appium appium/appium"
+
+alias clever-tool="scala-cli ~/clever-tools/scala-cli-tools --main-class"
 
 function chpwd() {
     emulate -L zsh
-    exa -a
+    ls -a
 }
 
 function pdf2ps2pdf() {
@@ -66,3 +60,18 @@ runcmd (){ perl -e 'ioctl STDOUT, 0x5412, $_ for split //, <>' ; }
 fh() {
     ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed -re 's/^\s*[0-9]+\s*//' | runcmd
 }
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+if [[ $1 == eval ]]
+then
+	"$@"
+	set --
+fi
+
+# >>> scala-cli completions >>>
+fpath=("/home/bob/.local/share/scalacli/completions/zsh" $fpath)
+compinit
+# <<< scala-cli completions <<<

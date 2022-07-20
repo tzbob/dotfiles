@@ -1,12 +1,19 @@
 " Vim Settings
-
-set clipboard=unnamedplus
-
-set surround
-
 let mapleader = " "
 
-" https://youtrack.jetbrains.com/issue/VIM-1970 
+set which-key
+set notimeout
+
+set clipboard=unnamedplus
+set surround
+
+set incsearch
+set smartcase
+set ignorecase
+
+set easymotion
+
+" https://youtrack.jetbrains.com/issue/VIM-1970
 set highlightedyank
 
 " ideavim
@@ -14,67 +21,68 @@ noremap <leader>q :source ~/.ideavimrc<CR>
 noremap <leader>h :action HideAllWindows<cr>
 
 " IDE actions, general browsing
-noremap <leader><space> :action SearchEverywhere<cr>
 nnoremap <leader>o :action FileStructurePopup<cr>
 noremap <leader>: :action GotoAction<cr>
 noremap <leader>; :action CommentByLineComment<cr>
 nnoremap <leader>e :action RecentFiles<cr>
 
-" [B]uffers
+let g:WhichKeyDesc_buffers = "<leader>b Buffers"
 nnoremap <leader>bd :action CloseContent<cr>
 nnoremap <leader>bb :action RecentFiles<cr>
+nnoremap <leader>bs :action NewScratchFile<cr>
 
-" [W]indows
+let g:WhichKeyDesc_windows = "<leader>w Windows"
 " pop window
 nnoremap <leader>wp :action EditSourceInNewWindow<cr>
 
-" [;] Moving places
+let g:WhichKeyDesc_moving = "; Moving"
+nmap ;s <Plug>(easymotion-jumptoanywhere)
 nnoremap ;t :action GotoTest<cr>
 nnoremap ;d :action GotoDeclaration<cr>
 nnoremap ;u :action FindUsages<cr>
 nnoremap ;i :action GotoImplementation<cr>
-nnoremap ;e :action RecentLocations<cr>
-nnoremap ;b :action RecentFiles<cr>
+nnoremap ;r :action RecentLocations<cr>
+nnoremap ;f :action RecentFiles<cr>
 
-" [F]iles
+let g:WhichKeyDesc_files = "<leader>f Files"
 noremap <leader>fed :e ~/.ideavimrc<cr>
 noremap <leader>fea :e ~/actionlist.txt<cr>
-noremap <leader>ff :action GotoFile<cr>
+noremap <leader>fr :action CopyPathWithLineNumber<cr>
 
-" [S]earching "
+let g:WhichKeyDesc_search = "<leader>f Searching"
 noremap <leader>sp :action FindInPath<cr>
 noremap <leader>ss :action Find<cr>
 noremap <leader>sf :action GotoFile<cr>
 noremap <leader>sa :action GotoAction<cr>
-noremap <leader>sn :action GotoClass<cr>
+noremap <leader>sc :action GotoClass<cr>
+noremap <leader>sr :action ReplaceInPath<cr>
 
-" [Programs
-nnoremap <leader>[n :action ActivateTODOToolWindow<cr>
-nnoremap <leader>[s :action Activatesbt-shell-toolwindowToolWindow<cr>
+let g:WhichKeyDesc_programs = "[ Programs"
+nnoremap [n :action ActivateTODOToolWindow<cr>
+nnoremap [s :action Activatesbt-shell-toolwindowToolWindow<cr>
+nnoremap [t :action ActivateTerminalToolWindow<cr>
 
 nnoremap <leader>.t :action Terminal.OpenInTerminal<cr>
-nnoremap <leader>[t :action ActivateTerminalToolWindow<cr>
 
-" [G]it
+let g:WhichKeyDesc_git = "<leader>g Git"
 noremap <leader>gg :action GitRepositoryActions<cr>
-noremap <leader>gc :action ActivateCommitToolWindow<cr>
-
-noremap <leader>gh :action Vcs.ShowTabbedFileHistory<cr>
-vnoremap <leader>gh :action Vcs.ShowHistoryForBlock<cr>
-
+noremap <leader>gs :action ActivateCommitToolWindow<cr>
 noremap <leader>gf :action Git.Fetch<cr>
 noremap <leader>gl :action Vcs.Show.Log<cr>
 noremap <leader>ga :action Annotate<cr>
 noremap <leader>gb :action Git.Branches<cr>
 
-" [R]efactoring
+noremap <leader>gh :action Vcs.ShowTabbedFileHistory<cr>
+vnoremap <leader>gh :action Vcs.ShowHistoryForBlock<cr>
+
+let g:WhichKeyDesc_refactor = "<leader>r Refactoring"
 noremap <leader>ro :action OptimizeImports<cr>
 noremap <leader>rr :action RenameElement<cr>
 noremap <leader>rm :action ExtractMethod<cr>
 noremap <leader>rv :action IntroduceVariable<cr>
 noremap <leader>ri :action Inline<cr>
 
-" [D]ebugging"
+let g:WhichKeyDesc_debug = "<leader>d Debugging"
 noremap <leader>de :action EvaluateExpression<cr>
 noremap <leader>db :action ToggleLineBreakpoint<cr>
 noremap <leader>dc :action EditBreakpoint<cr>
