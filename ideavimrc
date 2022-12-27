@@ -30,10 +30,13 @@ let g:WhichKeyDesc_buffers = "<leader>b Buffers"
 nnoremap <leader>bd :action CloseContent<cr>
 nnoremap <leader>bb :action RecentFiles<cr>
 nnoremap <leader>bs :action NewScratchFile<cr>
+nnoremap <leader>b<bs> :action ToggleBookmark<cr>
+nnoremap <leader>bn :action GotoNextBookmark<cr>
 
 let g:WhichKeyDesc_windows = "<leader>w Windows"
 " pop window
 nnoremap <leader>wp :action EditSourceInNewWindow<cr>
+nnoremap <leader>wf :action TogglePresentationMode<cr>
 
 let g:WhichKeyDesc_moving = "; Moving"
 nmap ;s <Plug>(easymotion-jumptoanywhere)
@@ -49,7 +52,7 @@ noremap <leader>fed :e ~/.ideavimrc<cr>
 noremap <leader>fea :e ~/actionlist.txt<cr>
 noremap <leader>fr :action CopyPathWithLineNumber<cr>
 
-let g:WhichKeyDesc_search = "<leader>f Searching"
+let g:WhichKeyDesc_search = "<leader>s Searching"
 noremap <leader>sp :action FindInPath<cr>
 noremap <leader>ss :action Find<cr>
 noremap <leader>sf :action GotoFile<cr>
@@ -57,20 +60,22 @@ noremap <leader>sa :action GotoAction<cr>
 noremap <leader>sc :action GotoClass<cr>
 noremap <leader>sr :action ReplaceInPath<cr>
 
-let g:WhichKeyDesc_programs = "[ Programs"
-nnoremap [n :action ActivateTODOToolWindow<cr>
-nnoremap [s :action Activatesbt-shell-toolwindowToolWindow<cr>
-nnoremap [t :action ActivateTerminalToolWindow<cr>
+let g:WhichKeyDesc_programs = "<leader>[ Programs"
+nnoremap <leader>[n :action ActivateTODOToolWindow<cr>
+nnoremap <leader>[s :action Activatesbt-shell-toolwindowToolWindow<cr>
+nnoremap <leader>[t :action ActivateTerminalToolWindow<cr>
 
 nnoremap <leader>.t :action Terminal.OpenInTerminal<cr>
 
 let g:WhichKeyDesc_git = "<leader>g Git"
 noremap <leader>gg :action GitRepositoryActions<cr>
 noremap <leader>gs :action ActivateCommitToolWindow<cr>
+noremap <leader>gr :action Git.Rebase<cr>
 noremap <leader>gf :action Git.Fetch<cr>
 noremap <leader>gl :action Vcs.Show.Log<cr>
 noremap <leader>ga :action Annotate<cr>
 noremap <leader>gb :action Git.Branches<cr>
+noremap <leader>gp :action Git.Pull<cr>
 
 noremap <leader>gh :action Vcs.ShowTabbedFileHistory<cr>
 vnoremap <leader>gh :action Vcs.ShowHistoryForBlock<cr>

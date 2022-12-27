@@ -18,6 +18,8 @@ import XMonad.Util.Run
 
 
 import XMonad
+import XMonad.Actions.GridSelect
+import XMonad.Actions.EasyMotion (selectWindow)
 import XMonad.Actions.PhysicalScreens
 import XMonad.Actions.CycleWS
 import XMonad.Actions.DynamicWorkspaces
@@ -29,11 +31,13 @@ import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.SetWMName
+import XMonad.Layout.LayoutScreens
 import XMonad.Layout.LayoutModifier
 import XMonad.Layout.Named
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.ThreeColumns
+import XMonad.Layout.ResizableThreeColumns
 import XMonad.Layout.PerScreen
 import XMonad.Prompt
 import XMonad.Prompt.Window
@@ -133,8 +137,9 @@ recursiveSubMap bindings = sm
 myRootMap :: XConfig Layout -> ((ButtonMask, KeySym), X ())
 myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
     where
-      rootMap = subMap [ (xK_j, windows W.focusDown)
-                       , (xK_k, windows W.focusUp)
+      rootMap = subMap [ (xK_j, windows W.focusUp)
+                       , (xK_k, windows W.focusDown)
+                       , (xK_f, selectWindow def >>= (`whenJust` windows . W.focusWindow))
 
                        , (xK_s, shiftMap)
 
@@ -168,11 +173,11 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                                  , (xK_Return, windows W.focusMaster)
                                  , (xK_j, windows W.focusDown) ]
 
-      shiftMap = recursiveSubMap [ (xK_k, windows W.swapUp)
+      shiftMap = recursiveSubMap [ (xK_k, windows W.swapDown)
                                  , (xK_Return, windows W.swapMaster)
                                  , (xK_h, sendMessage (IncMasterN 1))
                                  , (xK_l, sendMessage (IncMasterN (-1)))
-                                 , (xK_j, windows W.swapDown) ]
+                                 , (xK_j, windows W.swapUp) ]
 
       resizeMap = recursiveSubMap [ (xK_h, sendMessage Shrink)
                                   , (xK_l, sendMessage Expand)
@@ -180,7 +185,8 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                                   , (xK_k, sendMessage MirrorExpand) ]
 
       layoutMap = subMap [ (xK_n, sendMessage NextLayout)
-                         , (xK_r, setLayout $ XMonad.layoutHook conf) ]
+                         , (xK_s, layoutScreens 2 (fixedLayout [Rectangle 0 0 3840 1080, Rectangle 960 1080 1920 1080]))
+                         , (xK_r, rescreen) ]
 
       volumeMap = recursiveSubMap [ (xK_j, spawn "amixer sset Master 5%- unmute")
                                   , (xK_k, spawn "amixer sset Master 5%+ unmute")
@@ -197,7 +203,6 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                              ]
 
       programMap = subMap [ (xK_o, spawn "rofi -show drun -show-icons")
-                          , (xK_g, spawn "rofi -dmenu > /home/bob/.cache/pomodoro_session")
                           , (xK_p, spawn "rofi -show run -show-icons")
                           , (xK_e, spawn "emacsclient -c -a emacs")
                           , (xK_f, spawn "feh -z ~/Dropbox/Photos/Ds3Wallpapers/")
@@ -206,13 +211,15 @@ myRootMap conf = (myLeader, hlCommandMode >> rootMap >> hlRegularMode)
                           , (xK_b, spawn "firefox")
                           , (xK_c, spawn "google-chrome")
                           , (xK_t, spawn "xfce4-terminal")
-                          , (xK_l, spawn "gnome-screensaver-command -l") ]
+                          , (xK_l, spawn "mate-screensaver-command -l") ]
 
       workspaceSelectMap = subMap $ [ (xK_c, removeEmptyWorkspace)
                                     , (xK_Return, addWorkspacePrompt myXPConfig)
                                     , (xK_space, selectWorkspace myXPConfig)
                                     , (xK_BackSpace, selectWorkspace myXPConfig)
-                                    , (xK_m, withWorkspace myXPConfig (windows . W.shift))
+                                    , (xK_f, gridselectWorkspace def W.greedyView)
+                                    , (xK_m, gridselectWorkspace def (\ws -> W.greedyView ws . W.shift ws))
+                                    , (xK_b, withWorkspace myXPConfig (windows . W.shift))
                                     , (xK_r, renameWorkspace myXPConfig) ]
 
 myKeys :: XConfig Layout -> M.Map (ButtonMask, KeySym) (X ())
@@ -245,19 +252,24 @@ myLayout = desktopLayoutModifiers $ mainLayout ||| max
   where
     mainLayout = ifWider 2560 mid tiled
     tiled = makeSub "vertical" tall
-    mid = makeSub "three" $ ThreeColMid 1 (3/100) (3/7)
+    mid = makeSub "three" $ ResizableThreeColMid 1 (3/100) (3/7) []
     mirrored = makeSub "horizontal" (Mirror tall)
     makeSub name layout = overscan myBorderWidth $ named name $ layout
     max = overscan myBorderWidth $ named "max" Full
     tall = ResizableTall 1 (3/100) (3/5) []
 
 -- Window rules:
--- > xprop | grep WM_CLASS
+-- > xprop | grep WM_CLASS (className)
+-- > xprop | grep WM_NAME (resource, title)
 -------------------------------------------------------------------------------
 
 myManageHook :: ManageHook
-myManageHook = composeAll [ title =? "KakaoTalkShadowWnd" --> doIgnore
-                          , title =? "KakaoTalkEdgeWnd" --> doIgnore
+myManageHook = composeAll [ title =? "IDEA deploy" --> doShift "deploy"
+                          , title =? "IDEA infrops" --> doShift "infrops"
+                          , title =? "IDEA root" --> doShift "atlas"
+                          , title =? "Terminal - root" --> doShift "atlas"
+                          , title =? "Spotify" --> doShift "media"
+                          , title =? "Spotify" --> doShift "media"
                           ]
     <+> namedScratchpadManageHook myScratchpads
     <+> manageHook desktopConfig
@@ -287,27 +299,19 @@ myProjects :: [Project]
 myProjects =
   [ Project { projectName      = "inbox"
             , projectDirectory = "~/"
+            , projectStartHook = Just $ do spawn "google-chrome"
+            }
+  , Project { projectName      = "personal"
+            , projectDirectory = "~/"
             , projectStartHook = Just $ do spawn "firefox"
             }
   , Project { projectName      = "emacs"
             , projectDirectory = "~/"
             , projectStartHook = Just $ do spawn "emacsclient -c -a emacs"
             }
-  , Project { projectName      = "zotero"
-            , projectDirectory = "~/"
-            , projectStartHook = Just $ do spawn "zotero"
-            }
   , Project { projectName      = "media"
             , projectDirectory = "~/"
             , projectStartHook = Just $ do spawn "spotify"
-            }
-  , Project { projectName      = "focus1"
-            , projectDirectory = "~/"
-            , projectStartHook = Just $ do spawn "eog -n -f black.png"
-            }
-  , Project { projectName      = "focus2"
-            , projectDirectory = "~/"
-            , projectStartHook = Just $ do spawn "eog -n -f black.png"
             }
   ]
 
@@ -354,7 +358,7 @@ main = do
     , normalBorderColor  = fg scheme
     , focusedBorderColor = fg scheme
     , modMask            = mod4Mask
-    , workspaces         = ["inbox", "media", "chat"]
+    , workspaces         = ["inbox", "personal", "media", "infrops", "atlas", "deploy"]
 
     -- bindings
     , keys               = myKeys

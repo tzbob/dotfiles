@@ -37,6 +37,8 @@ alias sudo="sudo "
 
 alias b2w="spd-say 'back to work'"
 
+alias b='let a="60*15" && sleep $a && b2w'
+
 alias pidofsbtfork="ps aux | grep '[F]orkMain' | awk {'print \$2'}"
 alias pidofsbtrun="ps aux | grep '[c]om.cleverbase.core.platform.Main' | awk {'print \$2'}"
 
